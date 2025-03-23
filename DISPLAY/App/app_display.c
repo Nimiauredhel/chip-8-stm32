@@ -44,6 +44,14 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
+uint16_t red = 0b1111100000000000;
+uint16_t green = 0b0000011111100000;
+uint16_t blue = 0b0000000000011111;
+uint16_t cyan = 0b0000011111111111;
+uint16_t magenta = 0b11111000000111111;
+
+uint8_t rect[2048];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -79,11 +87,6 @@ void MX_DISPLAY_Init(void)
   sprintf(msg_out, "LCD Initialized.\r\n");
 	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
 
-  uint8_t disp_data_1[2] =
-  {
-	0b00000000, 0b11111000,
-  };
-
   ret = BSP_LCD_SetOrientation(0, LCD_ORIENTATION_LANDSCAPE);
   sprintf(msg_out, "Set Orientation result: %ld\r\n", ret);
 	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
@@ -97,24 +100,6 @@ void MX_DISPLAY_Init(void)
 	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
 */
 
-	ret = BSP_LCD_GetXSize(0, &x_size);
-  sprintf(msg_out, "GetXSize value: %lu, result: %ld\r\n", x_size, ret);
-	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
-
-	ret = BSP_LCD_GetYSize(0, &y_size);
-  sprintf(msg_out, "GetYSize value: %lu, result: %ld\r\n", y_size, ret);
-	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
-
-	for (int x = 0; x < x_size; x++)
-	{
-		for (int y = 0; y < y_size; y++)
-		{
-			ret = BSP_LCD_FillRGBRect(0, 0, disp_data_1, x, y, 1, 1);
-			BSP_LCD_WaitForTransferToBeDone(0);
-			  sprintf(msg_out, "Fill RGB at x:%ld, y:%ld, result: %ld\r\n", x, y, ret);
-			HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
-		}
-	}
 
   /* USER CODE END MX_DISPLAY_Init 1 */
 }
@@ -125,6 +110,43 @@ void MX_DISPLAY_Init(void)
 void MX_DISPLAY_Process(void)
 {
   /* USER CODE BEGIN MX_DISPLAY_Process */
+	int32_t ret;
+	uint32_t val;
+	uint32_t x_size;
+	uint32_t y_size;
+
+	char msg_out[64];
+
+	ret = BSP_LCD_GetXSize(0, &x_size);
+  sprintf(msg_out, "GetXSize value: %lu, result: %ld\r\n", x_size, ret);
+	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
+
+	ret = BSP_LCD_GetYSize(0, &y_size);
+  sprintf(msg_out, "GetYSize value: %lu, result: %ld\r\n", y_size, ret);
+	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
+
+	HAL_Delay(100);
+	uint16_t color[5] = {red, green, blue, cyan, magenta};
+
+	for (int c = 0; c < 5; c++)
+	{
+		// fill in 32*32px(*2bytes) test piece
+		for (int i = 0; i < 2048; i+=2)
+		{
+			memcpy(rect + i, &color[c], 2);
+		}
+
+		for (int x = 0; x < x_size; x+=32)
+		{
+			for (int y = 0; y < y_size; y+=32)
+			{
+				ret = BSP_LCD_FillRGBRect(0, 0, rect, x, y, 32, 32);
+				BSP_LCD_WaitForTransferToBeDone(0);
+				  sprintf(msg_out, "Fill RGB at x:%ld, y:%ld, result: %ld\r\n", x, y, ret);
+				HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
+			}
+		}
+	}
 
   /* USER CODE END MX_DISPLAY_Process */
 }
