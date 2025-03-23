@@ -87,8 +87,36 @@ void gfx_fill_screen(Color565_t *fill_color)
     }
 }
 
-void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t fill_color);
-void gfx_fill_rect_color_loop(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color_loop, uint16_t loop_length);
+void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color)
+{
+    uint16_t buffer_size = width * height * 2;
+    uint8_t *rect_buffer = (uint8_t *)malloc(buffer_size);
+
+    for (uint16_t idx = 0; idx < buffer_size; idx++)
+    {
+        memcpy(rect_buffer+idx, fill_color + idx % 2, 1);
+    }
+
+    screen_fill_rect(rect_buffer, x_origin, y_origin, width, height);
+
+    free(rect_buffer);
+}
+
+void gfx_fill_rect_color_loop(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color_loop, uint16_t loop_length)
+{
+    uint16_t buffer_size = width * height * 2;
+    uint8_t *rect_buffer = (uint8_t *)malloc(buffer_size);
+    uint16_t looped_idx;
+
+    for (uint16_t idx = 0; idx < buffer_size; idx++)
+    {
+        memcpy(rect_buffer+idx, fill_color_loop[idx % loop_length], 1);
+    }
+
+    screen_fill_rect(rect_buffer, x_origin * width, y_origin * height, width, height);
+
+    free(rect_buffer);
+}
 
 void gfx_draw_binary_sprite(BinarySprite_t sprite, uint16_t x_origin, uint16_t y_origin);
 void gfx_draw_binary_sprite_scaled(BinarySprite_t sprite, uint16_t x_origin, uint16_t y_origin, float scale);

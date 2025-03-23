@@ -25,3 +25,8 @@ uint32_t screen_get_y_size(void)
 	BSP_LCD_GetYSize(0, &value);
 	return value;
 }
+
+void screen_await_transfer(void)
+{
+	BSP_LCD_WaitForTransferToBeDone(0);
+}
