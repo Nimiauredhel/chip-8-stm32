@@ -9,6 +9,21 @@
 
 //extern UART_HandleTypeDef huart3;
 
+static const uint8_t screen_fill_dimension_divisor = 8;
+
+static uint16_t screen_fill_buffer_width;
+static uint16_t screen_fill_buffer_height;
+static uint16_t screen_fill_buffer_size_bytes;
+static uint8_t *screen_fill_buffer = NULL;
+
+static void initialize_screen_fill_buffer(void)
+{
+	screen_fill_buffer_width = screen_get_x_size() / screen_fill_dimension_divisor;
+	screen_fill_buffer_height = screen_get_y_size() / screen_fill_dimension_divisor;
+	screen_fill_buffer_size_bytes = screen_fill_buffer_width * screen_fill_buffer_height * 2;
+	screen_fill_buffer = (uint8_t *)malloc(screen_fill_buffer_size_bytes);
+}
+
 void gfx_rgb_to_565_nonalloc(Color565_t *dest, uint8_t red_percent, uint8_t green_percent, uint8_t blue_percent)
 {
     // RGB565 2 byte format: [gggBbbbb][RrrrrGgg]
@@ -41,28 +56,30 @@ void gfx_fill_screen(Color565_t *fill_color)
 {
     // write one color to the whole screen, but in 1/<divisor*divisor> chunks,
     // to avoid filling 50% of RAM for one color..
-    static const uint8_t dimension_divisor = 8;
+	// the buffer is allocated once since it will always be the same size,
+	// so we null check here in case it's the first time.
+	if (screen_fill_buffer == NULL)
+	{
+		initialize_screen_fill_buffer();
+	}
 
-    uint16_t chunk_width = screen_get_x_size() / dimension_divisor;
-    uint16_t chunk_height = screen_get_y_size() / dimension_divisor;
-    uint16_t chunk_size_bytes = chunk_width * chunk_height * 2;
-    uint8_t *chunk_data = (uint8_t *)malloc(chunk_size_bytes);
-
-    for (uint16_t idx = 0; idx < chunk_size_bytes; idx++)
+    for (uint16_t idx = 0; idx < screen_fill_buffer_size_bytes; idx++)
     {
-        memcpy(chunk_data+idx, fill_color + idx % 2, 1);
+        memcpy(screen_fill_buffer+idx, fill_color + idx % 2, 1);
     }
 
     uint16_t x = 0;
     uint16_t y = 0;
 
-    while(y < dimension_divisor)
+    while(y < screen_fill_dimension_divisor)
     {
-        screen_fill_rect(chunk_data, x * chunk_width, y * chunk_height, chunk_width, chunk_height);
+        screen_fill_rect(screen_fill_buffer,
+        		x * screen_fill_buffer_width, y * screen_fill_buffer_height,
+				screen_fill_buffer_width, screen_fill_buffer_height);
 
         x += 1;
 
-        if (x >= dimension_divisor)
+        if (x >= screen_fill_dimension_divisor)
         {
             x = 0;
             y += 1;
