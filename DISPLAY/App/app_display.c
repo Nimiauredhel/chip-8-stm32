@@ -151,8 +151,8 @@ void MX_DISPLAY_Init(void)
 void MX_DISPLAY_Process(void)
 {
   /* USER CODE BEGIN MX_DISPLAY_Process */
-	const uint16_t step_delay = 250;
-	Color565_t color;
+	const uint16_t step_delay = 50;
+	Color565_t color = {0};
 	Color565_t color_loop[16] = {0};
 
 	gfx_rgb_to_565_nonalloc(color_loop,    50, 50, 0);
@@ -181,86 +181,158 @@ void MX_DISPLAY_Process(void)
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 75, 25, 0);
-	gfx_fill_rect_single_color(0, 0, 80, 60, &color);
+	gfx_fill_rect_single_color(0, 0, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 50, 50, 0);
-	gfx_fill_rect_single_color(80, 0, 80, 60, &color);
+	gfx_fill_rect_single_color(80, 0, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 25, 75, 0);
-	gfx_fill_rect_single_color(160, 0, 80, 60, &color);
+	gfx_fill_rect_single_color(160, 0, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 100, 0);
-	gfx_fill_rect_single_color(240, 0, 80, 60, &color);
+	gfx_fill_rect_single_color(240, 0, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 75, 25);
-	gfx_fill_rect_single_color(240, 60, 80, 60, &color);
+	gfx_fill_rect_single_color(240, 60, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 50, 50);
-	gfx_fill_rect_single_color(160, 60, 80, 60, &color);
+	gfx_fill_rect_single_color(160, 60, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 25, 75);
-	gfx_fill_rect_single_color(80, 60, 80, 60, &color);
+	gfx_fill_rect_single_color(80, 60, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 0, 100);
-	gfx_fill_rect_single_color(0, 60, 80, 60, &color);
+	gfx_fill_rect_single_color(0, 60, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 75, 25, 0);
-	gfx_fill_rect_single_color(0, 120, 80, 60, &color);
+	gfx_fill_rect_single_color(0, 120, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 50, 50, 0);
-	gfx_fill_rect_single_color(80, 120, 80, 60, &color);
+	gfx_fill_rect_single_color(80, 120, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 25, 75, 0);
-	gfx_fill_rect_single_color(160, 120, 80, 60, &color);
+	gfx_fill_rect_single_color(160, 120, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 100, 0);
-	gfx_fill_rect_single_color(240, 120, 80, 60, &color);
+	gfx_fill_rect_single_color(240, 120, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 75, 25);
-	gfx_fill_rect_single_color(240, 180, 80, 60, &color);
+	gfx_fill_rect_single_color(240, 180, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 50, 50);
-	gfx_fill_rect_single_color(160, 180, 80, 60, &color);
+	gfx_fill_rect_single_color(160, 180, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 25, 75);
-	gfx_fill_rect_single_color(80, 180, 80, 60, &color);
+	gfx_fill_rect_single_color(80, 180, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 0, 100);
-	gfx_fill_rect_single_color(0, 180, 80, 60, &color);
+	gfx_fill_rect_single_color(0, 180, 80, 60, color);
 
 	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_fill_rect_color_loop(80, 60, 160, 120, color_loop, 16);
+
+	uint8_t hello_bytes[25] =
+	{
+			0b10010000,
+			0b10010000,
+			0b11110000,
+			0b10010000,
+			0b10010000,
+			0b11110000,
+			0b10000000,
+			0b11110000,
+			0b10000000,
+			0b11110000,
+			0b10000000,
+			0b10000000,
+			0b10000000,
+			0b10000000,
+			0b11110000,
+			0b10000000,
+			0b10000000,
+			0b10000000,
+			0b10000000,
+			0b11110000,
+			0b11110000,
+			0b10010000,
+			0b10010000,
+			0b10010000,
+			0b11110000,
+	};
+
+	uint8_t world_bytes[25] =
+	{
+			0b10001000,
+			0b10101000,
+			0b10101000,
+			0b10101000,
+			0b11111000,
+			0b11110000,
+			0b10010000,
+			0b10010000,
+			0b10010000,
+			0b11110000,
+			0b11100000,
+			0b10010000,
+			0b11100000,
+			0b10100000,
+			0b10010000,
+			0b10000000,
+			0b10000000,
+			0b10000000,
+			0b10000000,
+			0b11110000,
+			0b11100000,
+			0b10010000,
+			0b10010000,
+			0b10010000,
+			0b11100000,
+	};
+
+	Color565_t hello_color = {0};
+	Color565_t world_color = {0};
+	gfx_rgb_to_565_nonalloc(&hello_color, 100, 95, 100);
+	gfx_rgb_to_565_nonalloc(&world_color, 95, 100, 100);
+	BinarySprite_t *hello_sprite = gfx_bytes_to_binary_sprite(5, 5, hello_bytes);
+	BinarySprite_t *world_sprite = gfx_bytes_to_binary_sprite(5, 5, world_bytes);
+	gfx_draw_binary_sprite_scaled(hello_sprite, 88, 75, hello_color, 4);
+	gfx_draw_binary_sprite_scaled(world_sprite, 88, 135, world_color, 4);
+	free(hello_sprite);
+	free(world_sprite);
+
+	HAL_Delay(2000);
+
   /* USER CODE END MX_DISPLAY_Process */
 }
 

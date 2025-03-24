@@ -31,8 +31,6 @@
   ((byte) & 0x02 ? '1' : '0'), \
   ((byte) & 0x01 ? '1' : '0')
 
-
-
 typedef uint8_t Color565_t[2];
 
 typedef struct BinarySprite
@@ -65,12 +63,14 @@ typedef struct RectSprite565
  */
 void gfx_rgb_to_565_nonalloc(Color565_t *destination, uint8_t red_percent, uint8_t green_percent, uint8_t blue_percent);
 
+BinarySprite_t* gfx_bytes_to_binary_sprite(uint16_t height, uint8_t width, uint8_t *data);
+
 void gfx_fill_screen(Color565_t *fill_color);
 void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color);
 void gfx_fill_rect_color_loop(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color_loop, uint16_t loop_length);
 
-void gfx_draw_binary_sprite(BinarySprite_t sprite, uint16_t x_origin, uint16_t y_origin);
-void gfx_draw_binary_sprite_scaled(BinarySprite_t sprite, uint16_t x_origin, uint16_t y_origin, float scale);
+void gfx_draw_binary_sprite(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, Color565_t color);
+void gfx_draw_binary_sprite_scaled(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, Color565_t color, uint8_t scale);
 
 void gfx_draw_rect_sprite_565(RectSprite565_t sprite, uint16_t x_origin, uint16_t y_origin);
 void gfx_draw_rect_sprite_565_scaled(RectSprite565_t sprite, uint16_t x_origin, uint16_t y_origin, float scale);
