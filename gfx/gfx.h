@@ -45,6 +45,10 @@ typedef struct BinarySprite
 // TODO: make a version of this that allows for negative space, like the binary sprite,
 // TODO: without making every single cell bigger (like a bool would).
 // TODO: a possible solution is variable length enconding for streaks of color/nothing
+// TODO: VLE format idea: [VLE byte][color byte 0][color byte 1]
+// TODO: VLE byte contents: (1->128) = color repeat length, (129->255) = blank length, (0) = terminator
+// TODO: allow up to 127 compressed repeat color and/or repeat blank pixels, and length is encoded by terminator
+// This struct represents a width*height rectangle of RGB565 pixels (NO blanks, NO transparency)
 typedef struct RectSprite565
 {
 	uint16_t height_pixels;
