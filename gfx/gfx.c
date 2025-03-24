@@ -106,14 +106,13 @@ void gfx_fill_rect_color_loop(uint16_t x_origin, uint16_t y_origin, uint16_t wid
 {
     uint16_t buffer_size = width * height * 2;
     uint8_t *rect_buffer = (uint8_t *)malloc(buffer_size);
-    uint16_t looped_idx;
 
     for (uint16_t idx = 0; idx < buffer_size; idx++)
     {
-        memcpy(rect_buffer+idx, fill_color_loop[idx % loop_length], 1);
+        memcpy(rect_buffer+idx, fill_color_loop + (idx % loop_length + idx % 2), 1);
     }
 
-    screen_fill_rect(rect_buffer, x_origin * width, y_origin * height, width, height);
+    screen_fill_rect(rect_buffer, x_origin, y_origin, width, height);
 
     free(rect_buffer);
 }

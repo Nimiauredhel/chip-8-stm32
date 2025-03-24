@@ -151,7 +151,26 @@ void MX_DISPLAY_Init(void)
 void MX_DISPLAY_Process(void)
 {
   /* USER CODE BEGIN MX_DISPLAY_Process */
+	const uint16_t step_delay = 250;
 	Color565_t color;
+	Color565_t color_loop[16] = {0};
+
+	gfx_rgb_to_565_nonalloc(color_loop,    50, 50, 0);
+	gfx_rgb_to_565_nonalloc(color_loop+1,  50, 50, 5);
+	gfx_rgb_to_565_nonalloc(color_loop+2,  50, 50, 10);
+	gfx_rgb_to_565_nonalloc(color_loop+3,  50, 50, 15);
+	gfx_rgb_to_565_nonalloc(color_loop+4,  50, 50, 20);
+	gfx_rgb_to_565_nonalloc(color_loop+5,  50, 50, 25);
+	gfx_rgb_to_565_nonalloc(color_loop+6,  50, 50, 30);
+	gfx_rgb_to_565_nonalloc(color_loop+7,  50, 50, 35);
+    gfx_rgb_to_565_nonalloc(color_loop+8,  50, 50, 35);
+    gfx_rgb_to_565_nonalloc(color_loop+9,  50, 50, 30);
+    gfx_rgb_to_565_nonalloc(color_loop+10, 50, 50, 25);
+    gfx_rgb_to_565_nonalloc(color_loop+11, 50, 50, 20);
+    gfx_rgb_to_565_nonalloc(color_loop+12, 50, 50, 15);
+    gfx_rgb_to_565_nonalloc(color_loop+13, 50, 50, 10);
+    gfx_rgb_to_565_nonalloc(color_loop+14, 50, 50, 5);
+	gfx_rgb_to_565_nonalloc(color_loop+15, 50, 50, 0);
 
 	HAL_Delay(1000);
 
@@ -159,69 +178,89 @@ void MX_DISPLAY_Process(void)
 	gfx_rgb_to_565_nonalloc(&color, 100, 0, 0);
 	gfx_fill_screen(&color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 75, 25, 0);
 	gfx_fill_rect_single_color(0, 0, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 50, 50, 0);
 	gfx_fill_rect_single_color(80, 0, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 25, 75, 0);
 	gfx_fill_rect_single_color(160, 0, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 100, 0);
 	gfx_fill_rect_single_color(240, 0, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 75, 25);
 	gfx_fill_rect_single_color(240, 60, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 50, 50);
 	gfx_fill_rect_single_color(160, 60, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 25, 75);
 	gfx_fill_rect_single_color(80, 60, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 0, 100);
 	gfx_fill_rect_single_color(0, 60, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 75, 25, 0);
 	gfx_fill_rect_single_color(0, 120, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 50, 50, 0);
 	gfx_fill_rect_single_color(80, 120, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 25, 75, 0);
 	gfx_fill_rect_single_color(160, 120, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 100, 0);
 	gfx_fill_rect_single_color(240, 120, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 75, 25);
 	gfx_fill_rect_single_color(240, 180, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 50, 50);
 	gfx_fill_rect_single_color(160, 180, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 25, 75);
 	gfx_fill_rect_single_color(80, 180, 80, 60, &color);
 
+	HAL_Delay(step_delay);
 	screen_await_transfer();
 	gfx_rgb_to_565_nonalloc(&color, 0, 0, 100);
 	gfx_fill_rect_single_color(0, 180, 80, 60, &color);
+
+	HAL_Delay(step_delay);
+	screen_await_transfer();
+	gfx_fill_rect_color_loop(80, 60, 160, 120, color_loop, 16);
   /* USER CODE END MX_DISPLAY_Process */
 }
 
