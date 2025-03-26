@@ -135,12 +135,6 @@ void MX_DISPLAY_Init(void)
   ret = BSP_LCD_DisplayOn(0);
   sprintf(msg_out, "Display On result: %ld\r\n", ret);
 	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
-/*
-  ret = BSP_LCD_SetDisplayWindow(0, 120, 120, 64, 64);
-  sprintf(msg_out, "Set Window result: %ld\r\n", ret);
-	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
-*/
-
 
   /* USER CODE END MX_DISPLAY_Init 1 */
 }

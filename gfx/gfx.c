@@ -10,21 +10,6 @@
 
 //extern UART_HandleTypeDef huart3;
 
-static const uint8_t screen_fill_dimension_divisor = 8;
-
-static uint16_t screen_fill_buffer_width;
-static uint16_t screen_fill_buffer_height;
-static uint16_t screen_fill_buffer_size_bytes;
-static uint8_t *screen_fill_buffer = NULL;
-
-static void initialize_screen_fill_buffer(void)
-{
-	screen_fill_buffer_width = screen_get_x_size() / screen_fill_dimension_divisor;
-	screen_fill_buffer_height = screen_get_y_size() / screen_fill_dimension_divisor;
-	screen_fill_buffer_size_bytes = screen_fill_buffer_width * screen_fill_buffer_height * 2;
-	screen_fill_buffer = (uint8_t *)malloc(screen_fill_buffer_size_bytes);
-}
-
 void gfx_rgb_to_565_nonalloc(Color565_t *dest, uint8_t red_percent, uint8_t green_percent, uint8_t blue_percent)
 {
     // RGB565 2 byte format: [ggGbbbbB][rrrrRggg]
@@ -67,23 +52,34 @@ BinarySprite_t* gfx_bytes_to_binary_sprite(uint16_t height_pixels, uint8_t width
 
 void gfx_fill_screen(Color565_t *fill_color)
 {
-    // write one color to the whole screen, but in 1/<divisor*divisor> chunks,
+    // write one color to the whole screen, but in chunks,
     // to avoid filling 50% of RAM for one color..
-	// the buffer is allocated once since it will always be the same size,
-	// so we null check here in case it's the first time.
+	// the buffer is allocated once since it will always be the same size
+	static const uint8_t screen_fill_divisor = 32;
+	static uint16_t screen_fill_buffer_size_bytes = 0;
+	static uint8_t *screen_fill_buffer =  NULL;
+
+	uint16_t idx;
+
 	if (screen_fill_buffer == NULL)
 	{
-		initialize_screen_fill_buffer();
+		screen_fill_buffer_size_bytes
+		= (screen_get_x_size() * screen_get_y_size() * 2) / screen_fill_divisor;
+		screen_fill_buffer = (uint8_t *)malloc(screen_fill_buffer_size_bytes);
 	}
 
-    for (uint16_t idx = 0; idx < screen_fill_buffer_size_bytes; idx++)
+    for (idx = 0; idx < screen_fill_buffer_size_bytes; idx++)
     {
         memcpy(screen_fill_buffer+idx, fill_color + idx % 2, 1);
     }
 
-    uint16_t x = 0;
-    uint16_t y = 0;
+    BSP_LCD_SetDisplayWindow(0, 0, 0, screen_get_x_size(), screen_get_y_size());
 
+    for (idx = 0; idx < screen_fill_divisor; idx++)
+    {
+    	BSP_LCD_WriteData(0, screen_fill_buffer, screen_fill_buffer_size_bytes);
+    }
+/*
     while(y < screen_fill_dimension_divisor)
     {
         screen_fill_rect(screen_fill_buffer,
@@ -98,6 +94,7 @@ void gfx_fill_screen(Color565_t *fill_color)
             y += 1;
         }
     }
+    */
 }
 
 void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color)
