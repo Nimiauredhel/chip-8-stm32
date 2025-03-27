@@ -73,33 +73,20 @@ void gfx_fill_screen(Color565_t *fill_color)
         memcpy(screen_fill_buffer+idx, fill_color + idx % 2, 1);
     }
 
-    BSP_LCD_SetDisplayWindow(0, 0, 0, screen_get_x_size(), screen_get_y_size());
-
-    for (idx = 0; idx < screen_fill_divisor; idx++)
-    {
-    	BSP_LCD_WriteData(0, screen_fill_buffer, screen_fill_buffer_size_bytes);
-    }
-/*
-    while(y < screen_fill_dimension_divisor)
-    {
-        screen_fill_rect(screen_fill_buffer,
-        		x * screen_fill_buffer_width, y * screen_fill_buffer_height,
-				screen_fill_buffer_width, screen_fill_buffer_height);
-
-        x += 1;
-
-        if (x >= screen_fill_dimension_divisor)
-        {
-            x = 0;
-            y += 1;
-        }
-    }
-    */
+    screen_fill_rect_loop(screen_fill_buffer, screen_fill_buffer_size_bytes,
+    		0, 0, screen_get_x_size(), screen_get_y_size());
 }
 
 void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color)
 {
-    uint16_t buffer_size = width * height * 2;
+	static const uint8_t buffer_divisor = 8;
+
+	if (width * height < 1) return;
+
+    uint16_t buffer_size = width * height * 2/buffer_divisor;
+
+    if (buffer_size < buffer_divisor) buffer_size = buffer_divisor;
+
     uint8_t *rect_buffer = (uint8_t *)malloc(buffer_size);
 
     for (uint16_t idx = 0; idx < buffer_size; idx++)
@@ -107,22 +94,8 @@ void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t w
         memcpy(rect_buffer+idx, fill_color + idx % 2, 1);
     }
 
-    screen_fill_rect(rect_buffer, x_origin, y_origin, width, height);
-
-    free(rect_buffer);
-}
-
-void gfx_fill_rect_color_loop(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color_loop, uint16_t loop_length)
-{
-    uint16_t buffer_size = width * height * 2;
-    uint8_t *rect_buffer = (uint8_t *)malloc(buffer_size);
-
-    for (uint16_t idx = 0; idx < buffer_size; idx++)
-    {
-        memcpy(rect_buffer+idx, fill_color_loop + (idx % loop_length + idx % 2), 1);
-    }
-
-    screen_fill_rect(rect_buffer, x_origin, y_origin, width, height);
+    screen_fill_rect_loop(rect_buffer, buffer_size,
+    		x_origin, y_origin, width, height);
 
     free(rect_buffer);
 }

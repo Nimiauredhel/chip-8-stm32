@@ -18,7 +18,7 @@
 #define G565_MAX 63
 #define B565_MAX 31
 
-#define INT_PERCENT(percent, max) ((max * percent) / 100)
+#define INT_PERCENT(percent, max) ((max * percent * 2) / 200)
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c\r\n"
 #define BYTE_TO_BINARY(byte)  \
@@ -67,7 +67,6 @@ BinarySprite_t* gfx_bytes_to_binary_sprite(uint16_t height, uint8_t width, uint8
 
 void gfx_fill_screen(Color565_t *fill_color);
 void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color);
-void gfx_fill_rect_color_loop(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color_loop, uint16_t loop_length);
 
 void gfx_draw_binary_sprite(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, Color565_t color);
 void gfx_draw_binary_sprite_scaled(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, Color565_t color, uint8_t scale);
