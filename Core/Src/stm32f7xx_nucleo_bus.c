@@ -198,23 +198,6 @@ int32_t BSP_SPI1_SendRecv(uint8_t *pTxData, uint8_t *pRxData, uint16_t Length)
   return ret;
 }
 
-/**
-  * @brief  Write Data through SPI BUS with DMA.
-  * @param  pData: Pointer to data buffer to send
-  * @param  Length: Length of data in byte
-  * @retval BSP status
-  */
-int32_t BSP_SPI1_Send_DMA(uint8_t *pData, uint16_t Length)
-{
-  int32_t ret = BSP_ERROR_NONE;
-
-  if(HAL_SPI_Transmit_DMA(&hspi1, pData, Length) != HAL_OK)
-  {
-      ret = BSP_ERROR_UNKNOWN_FAILURE;
-  }
-  return ret;
-}
-
 #if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
 /**
   * @brief Register Default BSP SPI1 Bus Msp Callbacks
@@ -304,7 +287,6 @@ __weak HAL_StatusTypeDef MX_SPI1_Init(SPI_HandleTypeDef* hspi)
 
   return ret;
 }
-DMA_HandleTypeDef hdma_spi1_tx;
 
 static void SPI1_MspInit(SPI_HandleTypeDef* spiHandle)
 {
@@ -342,22 +324,6 @@ static void SPI1_MspInit(SPI_HandleTypeDef* spiHandle)
     GPIO_InitStruct.Alternate = BUS_SPI1_MOSI_GPIO_AF;
     HAL_GPIO_Init(BUS_SPI1_MOSI_GPIO_PORT, &GPIO_InitStruct);
 
-    /* Peripheral DMA init*/
-
-    hdma_spi1_tx.Instance = DMA2_Stream3;
-    hdma_spi1_tx.Init.Channel = DMA_CHANNEL_3;
-    hdma_spi1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    hdma_spi1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
-    hdma_spi1_tx.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_spi1_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
-    hdma_spi1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
-    hdma_spi1_tx.Init.Mode = DMA_NORMAL;
-    hdma_spi1_tx.Init.Priority = DMA_PRIORITY_LOW;
-    hdma_spi1_tx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
-    HAL_DMA_Init(&hdma_spi1_tx);
-
-  __HAL_LINKDMA(spiHandle,hdmatx,hdma_spi1_tx);
-
   /* USER CODE BEGIN SPI1_MspInit 1 */
 
   /* USER CODE END SPI1_MspInit 1 */
@@ -382,8 +348,6 @@ static void SPI1_MspDeInit(SPI_HandleTypeDef* spiHandle)
 
     HAL_GPIO_DeInit(BUS_SPI1_MOSI_GPIO_PORT, BUS_SPI1_MOSI_GPIO_PIN);
 
-    /* Peripheral DMA DeInit*/
-    HAL_DMA_DeInit(spiHandle->hdmatx);
   /* USER CODE BEGIN SPI1_MspDeInit 1 */
 
   /* USER CODE END SPI1_MspDeInit 1 */

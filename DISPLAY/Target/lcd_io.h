@@ -85,7 +85,7 @@
   * @brief      LCD Cache buffer as configured by the user.
   * @{
   */
-#define BUFFER_CACHE_LINES                  16  /*!< \hideinitializer Number of lines defined by the user for the Buffer cache */
+#define BUFFER_CACHE_LINES                  8  /*!< \hideinitializer Number of lines defined by the user for the Buffer cache */
 /**
   * @}
   */

@@ -114,8 +114,6 @@ int32_t BSP_SPI1_RegisterDefaultMspCallbacks (void);
 int32_t BSP_SPI1_RegisterMspCallbacks (BSP_SPI_Cb_t *Callbacks);
 #endif /* (USE_HAL_SPI_REGISTER_CALLBACKS == 1U) */
 
-int32_t BSP_SPI1_Send_DMA(uint8_t *pData, uint16_t Length);
-
 int32_t BSP_GetTick(void);
 
 /**
