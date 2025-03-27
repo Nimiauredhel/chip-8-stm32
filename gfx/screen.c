@@ -14,9 +14,9 @@ void screen_fill_rect(uint8_t *data, uint16_t x_origin, uint16_t y_origin, uint1
 
 void screen_fill_rect_loop(uint8_t *data, uint16_t data_length, uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height)
 {
-	if (width * height < 0) return;
+	if (width * height < 1) return;
 
-    uint16_t divisor = width * height * 2 / data_length;
+    uint16_t divisor = ((width * height * 2) / data_length);
 
     if (divisor < 1) divisor = 1;
 

@@ -14,6 +14,8 @@
 
 #include "screen.h"
 
+#define GFX_BUFFER_SIZE_BYTES 38400
+
 #define R565_MAX 31
 #define G565_MAX 63
 #define B565_MAX 31
@@ -22,6 +24,25 @@
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c\r\n"
 #define BYTE_TO_BINARY(byte)  \
+  ((byte) & 0x80 ? '1' : '0'), \
+  ((byte) & 0x40 ? '1' : '0'), \
+  ((byte) & 0x20 ? '1' : '0'), \
+  ((byte) & 0x10 ? '1' : '0'), \
+  ((byte) & 0x08 ? '1' : '0'), \
+  ((byte) & 0x04 ? '1' : '0'), \
+  ((byte) & 0x02 ? '1' : '0'), \
+  ((byte) & 0x01 ? '1' : '0')
+
+#define SHORT_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\r\n"
+#define SHORT_TO_BINARY(byte)  \
+  ((byte) & 0x8000 ? '1' : '0'), \
+  ((byte) & 0x4000 ? '1' : '0'), \
+  ((byte) & 0x2000 ? '1' : '0'), \
+  ((byte) & 0x1000 ? '1' : '0'), \
+  ((byte) & 0x0800 ? '1' : '0'), \
+  ((byte) & 0x0400 ? '1' : '0'), \
+  ((byte) & 0x0200 ? '1' : '0'), \
+  ((byte) & 0x0100 ? '1' : '0'), \
   ((byte) & 0x80 ? '1' : '0'), \
   ((byte) & 0x40 ? '1' : '0'), \
   ((byte) & 0x20 ? '1' : '0'), \
@@ -68,8 +89,7 @@ BinarySprite_t* gfx_bytes_to_binary_sprite(uint16_t height, uint8_t width, uint8
 void gfx_fill_screen(Color565_t *fill_color);
 void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color);
 
-void gfx_draw_binary_sprite(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, Color565_t color);
-void gfx_draw_binary_sprite_scaled(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, Color565_t color, uint8_t scale);
+void gfx_draw_binary_sprite(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, Color565_t color, uint8_t scale);
 
 void gfx_draw_rect_sprite_565(RectSprite565_t sprite, uint16_t x_origin, uint16_t y_origin);
 void gfx_draw_rect_sprite_565_scaled(RectSprite565_t sprite, uint16_t x_origin, uint16_t y_origin, float scale);

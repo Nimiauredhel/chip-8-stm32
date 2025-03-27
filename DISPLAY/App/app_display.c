@@ -104,6 +104,74 @@ void three_color_wipe(void)
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+	const uint8_t hello_bytes[25] =
+	{
+			0b10001000, // H
+			0b10001000,
+			0b11111000,
+			0b10001000,
+			0b10001000,
+			0b11111000, // E
+			0b10000000,
+			0b11111000,
+			0b10000000,
+			0b11111000,
+			0b10000000, // L
+			0b10000000,
+			0b10000000,
+			0b10000000,
+			0b11111000,
+			0b10000000, // L
+			0b10000000,
+			0b10000000,
+			0b10000000,
+			0b11111000,
+			0b11111000, // O
+			0b10001000,
+			0b10001000,
+			0b10001000,
+			0b11111000,
+	};
+
+	const uint8_t world_bytes[25] =
+	{
+			0b10001000, // W
+			0b10101000,
+			0b10101000,
+			0b10101000,
+			0b11111000,
+			0b11111000, // O
+			0b10001000,
+			0b10001000,
+			0b10001000,
+			0b11111000,
+			0b11110000, // R
+			0b10001000,
+			0b11110000,
+			0b10010000,
+			0b10001000,
+			0b10000000, // L
+			0b10000000,
+			0b10000000,
+			0b10000000,
+			0b11111000,
+			0b11110000, // D
+			0b10001000,
+			0b10001000,
+			0b10001000,
+			0b11110000,
+	};
+
+	const uint16_t step_delay = 50;
+
+	Color565_t color;
+	uint8_t color_loop[32];
+
+	Color565_t hello_color;
+	Color565_t world_color;
+	BinarySprite_t *hello_sprite;
+	BinarySprite_t *world_sprite;
+
 /* USER CODE END 0 */
 
 /**
@@ -133,6 +201,19 @@ void MX_DISPLAY_Init(void)
   sprintf(msg_out, "Display On result: %ld\r\n", ret);
 	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
 
+	// init color loop
+	for (int i = 0; i < 32; i++)
+	{
+		gfx_rgb_to_565_nonalloc(&color, 100 / 31 * i, 10 - i / 10, 10 - i / 10);
+        memcpy(color_loop+i, &color + i % 2, 1);
+	}
+
+	// init sprites
+	gfx_rgb_to_565_nonalloc(&hello_color, 100, 95, 100);
+	gfx_rgb_to_565_nonalloc(&world_color, 95, 100, 100);
+	hello_sprite = gfx_bytes_to_binary_sprite(5, 5, hello_bytes);
+	world_sprite = gfx_bytes_to_binary_sprite(5, 5, world_bytes);
+
   /* USER CODE END MX_DISPLAY_Init 1 */
 }
 
@@ -142,17 +223,6 @@ void MX_DISPLAY_Init(void)
 void MX_DISPLAY_Process(void)
 {
   /* USER CODE BEGIN MX_DISPLAY_Process */
-	const uint16_t step_delay = 50;
-	Color565_t color;
-
-	uint8_t color_loop[32];
-
-	for (int i = 0; i < 32; i++)
-	{
-		gfx_rgb_to_565_nonalloc(&color, 100 / 31 * i, 10 - i / 10, 10 - i / 10);
-        memcpy(color_loop+i, &color + i % 2, 1);
-	}
-
 	HAL_Delay(1000);
 
 	screen_await_transfer();
@@ -255,85 +325,17 @@ void MX_DISPLAY_Process(void)
 
 	HAL_Delay(step_delay);
 
-	uint8_t hello_bytes[25] =
-	{
-			0b10001000, // H
-			0b10001000,
-			0b11111000,
-			0b10001000,
-			0b10001000,
-			0b11111000, // E
-			0b10000000,
-			0b11111000,
-			0b10000000,
-			0b11111000,
-			0b10000000, // L
-			0b10000000,
-			0b10000000,
-			0b10000000,
-			0b11111000,
-			0b10000000, // L
-			0b10000000,
-			0b10000000,
-			0b10000000,
-			0b11111000,
-			0b11111000, // O
-			0b10001000,
-			0b10001000,
-			0b10001000,
-			0b11111000,
-	};
-
-	uint8_t world_bytes[25] =
-	{
-			0b10001000, // W
-			0b10101000,
-			0b10101000,
-			0b10101000,
-			0b11111000,
-			0b11111000, // O
-			0b10001000,
-			0b10001000,
-			0b10001000,
-			0b11111000,
-			0b11110000, // R
-			0b10001000,
-			0b11110000,
-			0b10010000,
-			0b10001000,
-			0b10000000, // L
-			0b10000000,
-			0b10000000,
-			0b10000000,
-			0b11111000,
-			0b11110000, // D
-			0b10001000,
-			0b10001000,
-			0b10001000,
-			0b11110000,
-	};
-
-	Color565_t hello_color;
-	Color565_t world_color;
-	gfx_rgb_to_565_nonalloc(&hello_color, 100, 95, 100);
-	gfx_rgb_to_565_nonalloc(&world_color, 95, 100, 100);
-	BinarySprite_t *hello_sprite = gfx_bytes_to_binary_sprite(5, 5, hello_bytes);
-	BinarySprite_t *world_sprite = gfx_bytes_to_binary_sprite(5, 5, world_bytes);
-
-	gfx_draw_binary_sprite_scaled(hello_sprite, 160-20+2, 120-15, hello_color, 1);
-	gfx_draw_binary_sprite_scaled(world_sprite, 160-20+2, 120+10, world_color, 1);
-	HAL_Delay(step_delay);
+	gfx_draw_binary_sprite(hello_sprite, 160-20+2, 120-15, hello_color, 1);
+	gfx_draw_binary_sprite(world_sprite, 160-20+2, 120+10, world_color, 1);
 	screen_fill_rect_loop(color_loop, 32, 0, 0, 320, 240);
-	gfx_draw_binary_sprite_scaled(hello_sprite, 160-40+4, 120-20, hello_color, 2);
-	gfx_draw_binary_sprite_scaled(world_sprite, 160-40+4, 120+10, world_color, 2);
-	HAL_Delay(step_delay);
+	gfx_draw_binary_sprite(hello_sprite, 160-40+4, 120-20, hello_color, 2);
+	gfx_draw_binary_sprite(world_sprite, 160-40+4, 120+10, world_color, 2);
 	screen_fill_rect_loop(color_loop, 32, 0, 0, 320, 240);
-	gfx_draw_binary_sprite_scaled(hello_sprite, 160-80+8, 120-30, hello_color, 4);
-	gfx_draw_binary_sprite_scaled(world_sprite, 160-80+8, 120+10, world_color, 4);
-	HAL_Delay(step_delay);
+	gfx_draw_binary_sprite(hello_sprite, 160-80+8, 120-30, hello_color, 4);
+	gfx_draw_binary_sprite(world_sprite, 160-80+8, 120+10, world_color, 4);
 	screen_fill_rect_loop(color_loop, 32, 0, 0, 320, 240);
-	gfx_draw_binary_sprite_scaled(hello_sprite, 16, 120-50, hello_color, 8);
-	gfx_draw_binary_sprite_scaled(world_sprite, 16, 120+10, world_color, 8);
+	gfx_draw_binary_sprite(hello_sprite, 16, 120-50, hello_color, 8);
+	gfx_draw_binary_sprite(world_sprite, 16, 120+10, world_color, 8);
 	HAL_Delay(step_delay);
 	free(hello_sprite);
 	free(world_sprite);
