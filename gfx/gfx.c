@@ -41,7 +41,7 @@ void gfx_rgb_to_565_nonalloc(Color565_t *dest, uint8_t red_percent, uint8_t gree
     */
 }
 
-BinarySprite_t* gfx_bytes_to_binary_sprite(uint16_t height_pixels, uint8_t width_bytes, uint8_t *data)
+BinarySprite_t* gfx_bytes_to_binary_sprite(uint16_t height_pixels, uint8_t width_bytes, const uint8_t *data)
 {
     // start with zeroed struct
     uint16_t data_size = height_pixels * width_bytes;

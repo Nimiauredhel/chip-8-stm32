@@ -84,7 +84,7 @@ typedef struct RectSprite565
  */
 void gfx_rgb_to_565_nonalloc(Color565_t *destination, uint8_t red_percent, uint8_t green_percent, uint8_t blue_percent);
 
-BinarySprite_t* gfx_bytes_to_binary_sprite(uint16_t height, uint8_t width, uint8_t *data);
+BinarySprite_t* gfx_bytes_to_binary_sprite(uint16_t height, uint8_t width, const uint8_t *data);
 
 void gfx_fill_screen(Color565_t *fill_color);
 void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color);
