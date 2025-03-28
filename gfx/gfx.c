@@ -54,7 +54,7 @@ BinarySprite_t* gfx_bytes_to_binary_sprite(uint16_t height_pixels, uint8_t width
 
 void gfx_fill_screen(Color565_t *fill_color)
 {
-    for (uint16_t idx = 0; idx < GFX_BUFFER_SIZE_BYTES; idx++)
+    for (uint32_t idx = 0; idx < GFX_BUFFER_SIZE_BYTES; idx++)
     {
         memcpy(gfx_buffer+idx, fill_color + idx % 2, 1);
     }
@@ -67,8 +67,8 @@ void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t w
 {
 	if (width * height < 1) return;
 
-    uint16_t buffer_size = width * height * 2;
-	uint8_t buffer_divisor = 1;
+    uint32_t buffer_size = width * height * 2;
+	uint32_t buffer_divisor = 1;
 
 	if (buffer_size > GFX_BUFFER_SIZE_BYTES)
 	{
@@ -76,7 +76,7 @@ void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t w
 		buffer_size /= buffer_divisor;
 	}
 
-    for (uint16_t idx = 0; idx < buffer_size; idx++)
+    for (uint32_t idx = 0; idx < buffer_size; idx++)
     {
         memcpy(gfx_buffer+idx, fill_color + idx % 2, 1);
     }

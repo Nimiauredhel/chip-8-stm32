@@ -353,25 +353,25 @@ void MX_DISPLAY_Process(void)
 	gfx_draw_binary_sprite(world_sprite, 24, 120+18, black, 8);
 	gfx_draw_binary_sprite(hello_sprite, 16, 120-50, hello_color, 8);
 	gfx_draw_binary_sprite(world_sprite, 16, 120+10, world_color, 8);
-	HAL_Delay(2000);
+	HAL_Delay(500);
 	gfx_draw_binary_sprite(alien_sprite, 100, 130, alien_color, 8);
 	gfx_draw_binary_sprite(hello_sprite, 24, 120-42, black, 8);
 	gfx_draw_binary_sprite(world_sprite, 24, 120+18, black, 8);
 	gfx_draw_binary_sprite(hello_sprite, 16, 120-50, hello_color, 8);
 	gfx_draw_binary_sprite(world_sprite, 16, 120+10, world_color, 8);
-	HAL_Delay(1000);
+	HAL_Delay(500);
 	gfx_draw_binary_sprite(alien_sprite, 32, 48, alien_color, 8);
 	gfx_draw_binary_sprite(hello_sprite, 24, 120-42, black, 8);
 	gfx_draw_binary_sprite(world_sprite, 24, 120+18, black, 8);
 	gfx_draw_binary_sprite(hello_sprite, 16, 120-50, hello_color, 8);
 	gfx_draw_binary_sprite(world_sprite, 16, 120+10, world_color, 8);
-	HAL_Delay(1000);
+	HAL_Delay(500);
 	gfx_draw_binary_sprite(alien_sprite, 200, 64, alien_color, 8);
 	gfx_draw_binary_sprite(hello_sprite, 24, 120-42, black, 8);
 	gfx_draw_binary_sprite(world_sprite, 24, 120+18, black, 8);
 	gfx_draw_binary_sprite(hello_sprite, 16, 120-50, hello_color, 8);
 	gfx_draw_binary_sprite(world_sprite, 16, 120+10, world_color, 8);
-	HAL_Delay(2000);
+	HAL_Delay(1000);
 	screen_fill_rect_loop(color_loop, 32, 0, 0, 320, 240);
 
   /* USER CODE END MX_DISPLAY_Process */

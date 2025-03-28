@@ -14,7 +14,7 @@
 
 #include "screen.h"
 
-#define GFX_BUFFER_SIZE_BYTES 38400
+#define GFX_BUFFER_SIZE_BYTES 153600
 
 #define R565_MAX 31
 #define G565_MAX 63
