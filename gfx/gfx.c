@@ -10,7 +10,16 @@
 
 //extern UART_HandleTypeDef huart3;
 
+const Color565_t color_black = { 0, 0 };
+const Color565_t color_white = { 255, 255 };
+
 static uint8_t gfx_buffer[GFX_BUFFER_SIZE_BYTES];
+
+void gfx_push_to_screen(void)
+{
+    screen_fill_rect_loop(gfx_buffer, GFX_BUFFER_SIZE_BYTES,
+    		0, 0, screen_get_x_size(), screen_get_y_size());
+}
 
 void gfx_rgb_to_565_nonalloc(Color565_t *dest, uint8_t red_percent, uint8_t green_percent, uint8_t blue_percent)
 {
@@ -58,9 +67,41 @@ void gfx_fill_screen(Color565_t *fill_color)
     {
         memcpy(gfx_buffer+idx, fill_color + idx % 2, 1);
     }
+}
 
-    screen_fill_rect_loop(gfx_buffer, GFX_BUFFER_SIZE_BYTES,
-    		0, 0, screen_get_x_size(), screen_get_y_size());
+void gfx_fill_rect_loop(uint8_t *data, uint32_t data_length, uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height)
+{
+	if (width * height < 1) return;
+
+    uint32_t target_size = width * height * 2;
+	uint32_t src_idx = 0;
+	uint32_t dest_x = x_origin;
+	uint32_t dest_y = y_origin;
+	uint32_t dest_idx;
+
+	width += x_origin;
+	height += y_origin;
+
+    for (uint32_t idx = 0; idx < target_size; idx+=2)
+    {
+		dest_idx = 2 * (dest_x + (dest_y * 320));
+
+        memcpy(gfx_buffer+dest_idx, data+src_idx, 1);
+        memcpy(gfx_buffer+dest_idx+1, data+src_idx+1, 1);
+
+		src_idx+=2;
+        if (src_idx >= data_length) src_idx = 0;
+
+		dest_x++;
+
+		if (dest_x >= width)
+		{
+			dest_x = x_origin;
+			dest_y++;
+		}
+
+		if (dest_y >= height) dest_y = y_origin;
+    }
 }
 
 void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, Color565_t *fill_color)
@@ -76,13 +117,30 @@ void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t w
 		buffer_size /= buffer_divisor;
 	}
 
-    for (uint32_t idx = 0; idx < buffer_size; idx++)
-    {
-        memcpy(gfx_buffer+idx, fill_color + idx % 2, 1);
-    }
+	uint32_t dest_x = x_origin;
+	uint32_t dest_y = y_origin;
+	uint32_t dest_idx;
 
-    screen_fill_rect_loop(gfx_buffer, buffer_size,
-    		x_origin, y_origin, width, height);
+	width += x_origin;
+	height += y_origin;
+
+    for (uint32_t idx = 0; idx < buffer_size; idx+=2)
+    {
+		dest_idx = 2 * (dest_x + (dest_y * 320));
+
+        memcpy(gfx_buffer+dest_idx, fill_color, 1);
+        memcpy(gfx_buffer+dest_idx+1, fill_color+1, 1);
+
+		dest_x++;
+
+		if (dest_x >= width)
+		{
+			dest_x = x_origin;
+			dest_y++;
+		}
+
+		if (dest_y >= height) dest_y = y_origin;
+    }
 }
 
 static void gfx_draw_binary_byte(uint8_t byte, uint16_t x_origin, uint16_t y_origin, Color565_t color, uint8_t scale)
@@ -121,7 +179,7 @@ static void gfx_draw_binary_byte(uint8_t byte, uint16_t x_origin, uint16_t y_ori
     }
 }
 
-void gfx_draw_binary_sprite(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, Color565_t color, uint8_t scale)
+void gfx_draw_binary_sprite(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, const Color565_t color, uint8_t scale)
 {
     // line by line (possibly naive approach)
 

@@ -18,6 +18,7 @@ void screen_fill_rect_loop(uint8_t *data, uint32_t data_length, uint16_t x_origi
 	//int32_t ret;
 	//char msg_out[64];
 
+
     if(divisor <= 2)
     {
     	BSP_LCD_WriteData(0, data, data_length/2);
