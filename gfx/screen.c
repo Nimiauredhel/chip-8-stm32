@@ -52,3 +52,20 @@ void screen_await_transfer(void)
 {
 	BSP_LCD_WaitForTransferToBeDone(0);
 }
+
+// TODO: figure out how to use the tearing callback later
+/*void BSP_LCD_SignalTearingEffectEvent(uint32_t Instance, uint8_t state, uint16_t Line)
+{
+  if(Instance == 0)
+  {
+    if(state)
+    {
+      if(Line == 0)
+      {
+      }
+    }
+    else
+    {
+    }
+  }
+}*/
