@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "data.h"
+#include "keypad.h"
 
 #define MAX_SIMULTANEOUS_KEYS 16
 #define CHIP8_INPUT_BUFFER_CYCLES (64)
