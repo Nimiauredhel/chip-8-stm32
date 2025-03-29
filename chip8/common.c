@@ -1,17 +1,12 @@
 #include "common.h"
 
+bool should_terminate = false;
+
 /**
  * The random_range() function uses this to determine
  * whether rand() was already seeded or not.
  */
 static bool random_was_seeded = false;
-
-// calling random_range once to ensure that random is seeded
-void initialize_random_seed(void)
-{
-    usleep(random_range(1234, 5678));
-}
-
 
 /**
  * Returns a random int between min and max.
@@ -42,5 +37,5 @@ float seconds_since_clock(struct timespec *start_clock)
     elapsed_float += (now_clock.tv_sec - start_clock->tv_sec);
     return elapsed_float;
     */
-	return 0.0166f;
+	return 0.0f;
 }

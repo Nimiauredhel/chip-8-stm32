@@ -50,7 +50,8 @@ bool run(Chip8_t *chip8)
     //render_registers(chip8->registers, chip8->layout.window_registers);
     //render_emulator_state(chip8->emu_state, chip8->layout.window_emu);
 
-    usleep(chip8->emu_state->ideal_step_delay_us);
+    //usleep(chip8->emu_state->ideal_step_delay_us);
+    HAL_Delay(2);
 
     while (chip8->registers->PC < 0xFFF && !should_terminate && !chip8->emu_state->should_reset)
     {
@@ -106,9 +107,9 @@ bool run(Chip8_t *chip8)
             // TODO: figure out if incrementing in the instruction code could be an improvement
             chip8->registers->PC += 2;
             // deincrementing timer registers
-            if (chip8->emu_state->chip8_timers_counter <= 0.0f)
+           // if (chip8->emu_state->chip8_timers_counter <= 0.0f)
             {
-                chip8->emu_state->chip8_timers_counter = 0.016666667f;
+                //chip8->emu_state->chip8_timers_counter = 0.016666667f;
                 if (chip8->registers->DT > 0) chip8->registers->DT--;
                 if (chip8->registers->ST > 0)
                 {
@@ -119,22 +120,26 @@ bool run(Chip8_t *chip8)
         }
 
         // timing the cycle and compensating as necessary
-        chip8->emu_state->cycle_seconds_counter = seconds_since_clock(&chip8->emu_state->start_clock);
+       /* chip8->emu_state->cycle_seconds_counter = seconds_since_clock(&chip8->emu_state->start_clock);
         chip8->emu_state->difference_step_delay_us = chip8->emu_state->ideal_step_delay_us - (1000000 * chip8->emu_state->cycle_seconds_counter);
 
         if (chip8->emu_state->difference_step_delay_us > 0)
         {
-            usleep(chip8->emu_state->difference_step_delay_us);
+            //usleep(chip8->emu_state->difference_step_delay_us);
+            HAL_Delay(chip8->emu_state->difference_step_delay_us / 1000);
             chip8->emu_state->cycle_seconds_counter = seconds_since_clock(&chip8->emu_state->start_clock);
         }
+        */
 
+        /*
         chip8->emu_state->chip8_timers_counter -= chip8->emu_state->cycle_seconds_counter;
         chip8->emu_state->runtime_seconds_counter += chip8->emu_state->cycle_seconds_counter;
         chip8->emu_state->avg_cps = chip8->emu_state->avg_cps == 0.0f ? 1.0f / chip8->emu_state->cycle_seconds_counter
         : ((1.0f / chip8->emu_state->cycle_seconds_counter) + chip8->emu_state->avg_cps) / 2.0f;
+        */
     }
 
-    HAL_Delay(250000);
+    HAL_Delay(25);
 
     /*
     if (chip8->registers->ST > 0)

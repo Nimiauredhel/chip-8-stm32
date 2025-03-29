@@ -65,8 +65,8 @@ typedef struct Chip8
 
 extern const uint8_t chip8_default_sprites[CHIP8_DEFAULT_SPRITES_SIZE];
 
-Chip8_t *create_instance(char *rom_path);
+Chip8_t *create_instance(uint16_t *rom);
 void load_default_sprites(Chip8_t *chip8);
-size_t load_rom(char *rom_path, uint8_t *dest_ptr);
+size_t load_rom(uint16_t *rom, uint8_t *dest_ptr);
 
 #endif

@@ -24,7 +24,6 @@
  */
 extern bool should_terminate;
 
-void initialize_random_seed(void);
 int random_range(int min, int max);
 float seconds_since_clock(struct timespec *start_clock);
 

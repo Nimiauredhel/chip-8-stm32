@@ -8,6 +8,7 @@ char emu_key_names[EMU_KEY_COUNT][10] =
 
 void read_input(uint16_t *emu_key_states, uint16_t *chip8_key_states)
 {
+	/*
     KeyBind_t key = KEY_NONE;
     uint8_t idx;
 
@@ -109,6 +110,7 @@ void read_input(uint16_t *emu_key_states, uint16_t *chip8_key_states)
             }
 #undef REGISTER_KEY_DOWN
     }
+    */
 }
 
 bool check_input(uint16_t *key_states, uint8_t key_idx)

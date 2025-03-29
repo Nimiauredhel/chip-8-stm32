@@ -20,6 +20,7 @@
 
 void init_display(DisplayLayout_t *layout)
 {
+	gfx_init(0);
 	layout->window_chip8 = gfx_bytes_to_binary_sprite(32, 8, NULL);
 }
 
@@ -27,7 +28,7 @@ void render_display(Chip8_t *chip8, WINDOW *window_chip8)
 {
 	gfx_bytes_to_binary_sprite_nonalloc(window_chip8, 32, 8, chip8->display_memory);
 	gfx_fill_screen(color_blue);
-	gfx_draw_binary_sprite(window_chip8, 128, 104, color_green, 1);
+	gfx_draw_binary_sprite(window_chip8, 32, 26, color_green, 4);
 	gfx_push_to_screen();
 }
 

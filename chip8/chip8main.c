@@ -1,18 +1,12 @@
-#include "common.h"
-#include "chip8_defs.h"
-#include "data.h"
-#include "emulator.h"
+#include "chip8main.h"
 
-int chip8start()
+int chip8start(void)
 {
-    initialize_random_seed();
-
-
     char *rom_path;
     bool should_run = true;
     while (should_run)
     {
-		Chip8_t *chip8 = create_instance(rom_path);
+		Chip8_t *chip8 = create_instance(test_program);
 		bool should_run = run(chip8);
 		free(chip8);
     }

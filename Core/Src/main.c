@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "app.h"
+#include "chip8main.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -106,7 +107,9 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  app_init();
+  //app_init();
+  chip8start();
+
 
   /* USER CODE END 2 */
 
@@ -114,7 +117,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  app_loop();
+	  //app_loop();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
