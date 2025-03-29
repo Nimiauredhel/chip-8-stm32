@@ -14,7 +14,9 @@
 
 #include "screen.h"
 
-#define GFX_BUFFER_SIZE_BYTES 153600
+#define GFX_SCREEN_WIDTH 320
+#define GFX_SCREEN_HEIGHT 240
+#define GFX_BUFFER_SIZE_BYTES (GFX_SCREEN_WIDTH * GFX_SCREEN_HEIGHT * 2)
 
 #define R565_MAX 31
 #define G565_MAX 63
@@ -84,6 +86,7 @@ extern Color565_t color_cyan;
 extern Color565_t color_magenta;
 extern Color565_t color_yellow;
 
+void gfx_init(uint32_t orientation);
 void gfx_push_to_screen(void);
 
 /**

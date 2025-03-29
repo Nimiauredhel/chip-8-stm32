@@ -7,6 +7,24 @@
 
 #include "screen.h"
 
+uint32_t screen_init(uint32_t orientation)
+{
+	int32_t ret;
+	char msg_out[64];
+
+	ret = BSP_LCD_Init(0, orientation);
+	sprintf(msg_out, "LCD Init result: %ld.\r\n, ret");
+	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
+
+	ret = BSP_LCD_SetOrientation(0, LCD_ORIENTATION_LANDSCAPE);
+	sprintf(msg_out, "Set Orientation result: %ld\r\n", ret);
+	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
+
+	ret = BSP_LCD_DisplayOn(0);
+	sprintf(msg_out, "Display On result: %ld\r\n", ret);
+	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
+}
+
 void screen_fill_rect_loop(uint8_t *data, uint32_t data_length, uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height)
 {
 	if (width * height < 1) return;

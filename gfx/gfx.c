@@ -22,6 +22,11 @@ Color565_t color_yellow = { 0b11100000, 0b11111111 };
 
 static uint8_t gfx_buffer[GFX_BUFFER_SIZE_BYTES];
 
+void gfx_init(uint32_t orientation)
+{
+	screen_init(orientation);
+}
+
 void gfx_push_to_screen(void)
 {
     screen_fill_rect_loop(gfx_buffer, GFX_BUFFER_SIZE_BYTES,

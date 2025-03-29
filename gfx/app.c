@@ -67,16 +67,16 @@ const uint8_t world_bytes[25] =
 
 const uint8_t alien_bytes[25] =
 {
-		0b00001000, // W
+		0b00001000, // left side of alien
 		0b00000100,
 		0b00001111,
 		0b00011011,
 		0b00111111,
-		0b00101111, // O
+		0b00101111,
 		0b00101000,
 		0b00001100,
 
-		0b00010000,
+		0b00010000, // right side of alien
 		0b00100000,
 		0b11110000,
 		0b11011000,
@@ -92,6 +92,7 @@ const uint16_t second_delay = 1000;
 
 Color565_t color;
 uint8_t color_loop[32];
+uint8_t color_loop_length = 32;
 
 Color565_t hello_color;
 Color565_t world_color;
@@ -113,29 +114,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 
 void app_init(void)
 {
-	int32_t ret;
-	char msg_out[64];
-
-  if(BSP_LCD_Init(0, LCD_ORIENTATION_PORTRAIT) != BSP_ERROR_NONE)
-  {
-    Error_Handler();
-  }
-
-  sprintf(msg_out, "LCD Initialized.\r\n");
-  HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
-
-  ret = BSP_LCD_SetOrientation(0, LCD_ORIENTATION_LANDSCAPE);
-  sprintf(msg_out, "Set Orientation result: %ld\r\n", ret);
-	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
-
-  ret = BSP_LCD_DisplayOn(0);
-  sprintf(msg_out, "Display On result: %ld\r\n", ret);
-	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
+	gfx_init(LCD_ORIENTATION_LANDSCAPE);
 
 	// init color loop
-	for (int i = 0; i < 32; i+=2)
+	for (int i = 0; i < color_loop_length; i+=2)
 	{
-		gfx_rgb_to_565_nonalloc(color, 100 / 31 * i, 10 - i / 10, 10 - i / 10);
+		float percent = i/(float)color_loop_length;
+
+		gfx_rgb_to_565_nonalloc(color, lerp(0, 100, percent) , lerp(0, 10, percent), lerp(0, 10, percent));
 		color_loop[i] = color[0];
 		color_loop[i+1] = color[1];
 	}
@@ -177,7 +163,7 @@ void app_loop(void)
 	gfx_fill_screen(color_black);
 	gfx_dirty = true;
 	HAL_Delay(half_step_delay);
-
+/*
 	gfx_rgb_to_565_nonalloc(color, 75, 25, 0);
 	gfx_fill_rect_single_color(0, 0, 80, 60, color);
 	gfx_dirty = true;
@@ -258,13 +244,13 @@ void app_loop(void)
 	gfx_dirty = true;
 	HAL_Delay(step_delay);
 	HAL_Delay(step_delay);
-
+*/
 	float scale = 0.00f;
 
 	while (scale < 1.0f)
 	{
-		scale += 0.05f;
-		gfx_fill_rect_loop(color_loop, 32, 160 - (160 * scale), 120 - (120 * scale), 320 * scale, 240 * scale);
+		scale += 0.2f;
+		gfx_fill_rect_loop(color_loop, color_loop_length, 160 - (160 * scale), 120 - (120 * scale), 320 * scale, 240 * scale);
 		gfx_dirty = true;
 		HAL_Delay(half_step_delay);
 	}
@@ -277,19 +263,19 @@ void app_loop(void)
 	gfx_dirty = true;
 	HAL_Delay(step_delay);
 	HAL_Delay(step_delay);
-	gfx_fill_rect_loop(color_loop, 32, 0, 0, 320, 240);
+	gfx_fill_rect_loop(color_loop, color_loop_length, 0, 0, 320, 240);
 	gfx_draw_binary_sprite(hello_sprite, 160-40+4, 120-20, hello_color, 2);
 	gfx_draw_binary_sprite(world_sprite, 160-40+4, 120+10, world_color, 2);
 	gfx_draw_binary_sprite(alien_sprite, 32, 130, alien_color, 10);
 	gfx_dirty = true;
 	HAL_Delay(step_delay);
-	gfx_fill_rect_loop(color_loop, 32, 0, 0, 320, 240);
+	gfx_fill_rect_loop(color_loop, color_loop_length, 0, 0, 320, 240);
 	gfx_draw_binary_sprite(hello_sprite, 160-80+8, 120-30, hello_color, 4);
 	gfx_draw_binary_sprite(world_sprite, 160-80+8, 120+10, world_color, 4);
 	gfx_draw_binary_sprite(alien_sprite, 48, 130, alien_color, 9);
 	gfx_dirty = true;
 	HAL_Delay(step_delay);
-	gfx_fill_rect_loop(color_loop, 32, 0, 0, 320, 240);
+	gfx_fill_rect_loop(color_loop, color_loop_length, 0, 0, 320, 240);
 	gfx_draw_binary_sprite(alien_sprite, 64, 130, alien_color, 8);
 	gfx_draw_binary_sprite(hello_sprite, 24, 120-42, color_black, 8);
 	gfx_draw_binary_sprite(world_sprite, 24, 120+18, color_black, 8);
@@ -298,30 +284,18 @@ void app_loop(void)
 	gfx_dirty = true;
 	HAL_Delay(step_delay);
 	HAL_Delay(step_delay);
-	gfx_draw_binary_sprite(alien_sprite, 100, 130, alien_color, 8);
-	gfx_draw_binary_sprite(hello_sprite, 24, 120-42, color_black, 8);
-	gfx_draw_binary_sprite(world_sprite, 24, 120+18, color_black, 8);
-	gfx_draw_binary_sprite(hello_sprite, 16, 120-50, hello_color, 8);
-	gfx_draw_binary_sprite(world_sprite, 16, 120+10, world_color, 8);
-	gfx_dirty = true;
 	HAL_Delay(step_delay);
 	HAL_Delay(step_delay);
-	gfx_draw_binary_sprite(alien_sprite, 32, 48, alien_color, 8);
-	gfx_draw_binary_sprite(hello_sprite, 24, 120-42, color_black, 8);
-	gfx_draw_binary_sprite(world_sprite, 24, 120+18, color_black, 8);
-	gfx_draw_binary_sprite(hello_sprite, 16, 120-50, hello_color, 8);
-	gfx_draw_binary_sprite(world_sprite, 16, 120+10, world_color, 8);
-	gfx_dirty = true;
-	HAL_Delay(step_delay);
-	HAL_Delay(step_delay);
-	gfx_draw_binary_sprite(alien_sprite, 200, 64, alien_color, 8);
-	gfx_draw_binary_sprite(hello_sprite, 24, 120-42, color_black, 8);
-	gfx_draw_binary_sprite(world_sprite, 24, 120+18, color_black, 8);
-	gfx_draw_binary_sprite(hello_sprite, 16, 120-50, hello_color, 8);
-	gfx_draw_binary_sprite(world_sprite, 16, 120+10, world_color, 8);
-	gfx_dirty = true;
-	HAL_Delay(second_delay);
-	gfx_fill_rect_loop(color_loop, 32, 0, 0, 320, 240);
-	gfx_dirty = true;
-	HAL_Delay(second_delay);
+
+	int16_t alien_x = 352;
+	while (alien_x < 1280)
+	{
+		gfx_fill_rect_loop(color_loop, color_loop_length, 0, 120, 320, 120);
+		gfx_draw_binary_sprite(alien_sprite, alien_x, 130, alien_color, 8);
+		gfx_dirty = true;
+		alien_x += 32;
+		HAL_Delay(half_step_delay);
+	}
+
+	HAL_Delay(half_step_delay);
 }

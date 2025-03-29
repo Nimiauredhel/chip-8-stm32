@@ -10,11 +10,11 @@
 
 #include "main.h"
 
-#include "lcd_io.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include "gfx.h"
+#include "utils.h"
 
 extern TIM_HandleTypeDef htim2;
 extern UART_HandleTypeDef huart3;

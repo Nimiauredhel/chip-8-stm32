@@ -105,8 +105,8 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   MX_TIM2_Init();
-  app_init();
   /* USER CODE BEGIN 2 */
+  app_init();
 
   /* USER CODE END 2 */
 
@@ -114,8 +114,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  app_loop();
     /* USER CODE END WHILE */
-	app_loop();
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
