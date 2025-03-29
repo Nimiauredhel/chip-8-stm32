@@ -62,14 +62,24 @@ void gfx_rgb_to_565_nonalloc(Color565_t dest, uint8_t red_percent, uint8_t green
     */
 }
 
+void gfx_bytes_to_binary_sprite_nonalloc(BinarySprite_t *sprite, uint16_t height_pixels, uint8_t width_bytes, const uint8_t *data)
+{
+    uint16_t data_size = height_pixels * width_bytes;
+    sprite->width_bytes = width_bytes;
+    sprite->height_pixels = height_pixels;
+
+    if (data != NULL)
+    {
+		memcpy(sprite->pixel_mask, data, data_size);
+    }
+}
+
 BinarySprite_t* gfx_bytes_to_binary_sprite(uint16_t height_pixels, uint8_t width_bytes, const uint8_t *data)
 {
     // start with zeroed struct
     uint16_t data_size = height_pixels * width_bytes;
     BinarySprite_t *sprite = malloc(sizeof(BinarySprite_t) + data_size);
-    sprite->width_bytes = width_bytes;
-    sprite->height_pixels = height_pixels;
-    memcpy(sprite->pixel_mask, data, data_size);
+    gfx_bytes_to_binary_sprite_nonalloc(sprite, height_pixels, width_bytes, data);
     return sprite;
 }
 

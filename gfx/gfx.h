@@ -98,6 +98,7 @@ void gfx_push_to_screen(void);
  */
 void gfx_rgb_to_565_nonalloc(Color565_t destination, uint8_t red_percent, uint8_t green_percent, uint8_t blue_percent);
 
+void gfx_bytes_to_binary_sprite_nonalloc(BinarySprite_t *sprite, uint16_t height_pixels, uint8_t width_bytes, const uint8_t *data);
 BinarySprite_t* gfx_bytes_to_binary_sprite(uint16_t height, uint8_t width, const uint8_t *data);
 
 void gfx_fill_screen(const Color565_t fill_color);
