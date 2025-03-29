@@ -183,7 +183,7 @@ void three_color_wipe(void)
 			0b00110000,
 	};
 
-	const uint16_t step_delay = 50;
+	const uint16_t step_delay = 16;
 
 	Color565_t color;
 	uint8_t color_loop[32];
