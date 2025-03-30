@@ -10,6 +10,8 @@
 
 #include <stdint.h>
 
-extern uint16_t test_program[];
+#define CHIP_8_PROGRAM_COUNT 7
+
+extern uint16_t *chip8_programs[CHIP_8_PROGRAM_COUNT];
 
 #endif /* ROMS_H_ */

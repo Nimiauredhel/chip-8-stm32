@@ -26,6 +26,15 @@ void init_display(DisplayLayout_t *layout)
 	gfx_select_window(layout->window_chip8);
 }
 
+void deinit_display(DisplayLayout_t *layout)
+{
+	gfx_select_window(NULL);
+	free(layout->window_chip8);
+	layout->window_chip8 = NULL;
+	free(layout->display_chip8);
+	layout->display_chip8 = NULL;
+}
+
 void render_display(Chip8_t *chip8, WINDOW *window_chip8)
 {
 	gfx_bytes_to_binary_sprite_nonalloc(chip8->layout.display_chip8, 32, 8, chip8->display_memory);

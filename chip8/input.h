@@ -6,7 +6,7 @@
 #include "keypad.h"
 
 #define MAX_SIMULTANEOUS_KEYS 16
-#define CHIP8_INPUT_BUFFER_CYCLES (16)
+#define CHIP8_INPUT_BUFFER_CYCLES (32)
 #define EMU_INPUT_BUFFER_CYCLES (1)
 
 typedef enum Chip8KeyIndex

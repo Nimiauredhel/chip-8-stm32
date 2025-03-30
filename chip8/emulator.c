@@ -41,6 +41,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	}
 }
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if(GPIO_Pin == USER_Btn_Pin)
+  {
+	  instance->emu_state->should_reset = true;
+  }
+  else
+  {
+      __NOP();
+  }
+}
+
+
 void emu_handle_input(Chip8_t *chip8)
 {
     if (!check_input(chip8->emu_state->emu_key_states, EMU_KEY_ANY_IDX)) return;
@@ -119,7 +132,7 @@ bool run(Chip8_t *chip8)
         //render_registers(chip8->registers, chip8->layout.window_registers);
 
         read_input(chip8->emu_state->emu_key_states, chip8->emu_state->chip8_key_states);
-        emu_handle_input(chip8);
+        //emu_handle_input(chip8);
 
         if (should_terminate) break;
 
@@ -193,7 +206,9 @@ bool run(Chip8_t *chip8)
         */
     }
 
+	HAL_TIM_Base_Stop_IT(&htim2);
 	HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_1);
+	deinit_display(&chip8->layout);
     HAL_Delay(25);
 
     /*
