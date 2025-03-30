@@ -13,7 +13,7 @@ uint32_t screen_init(uint32_t orientation)
 	char msg_out[64];
 
 	ret = BSP_LCD_Init(0, orientation);
-	sprintf(msg_out, "LCD Init result: %ld.\r\n, ret");
+	sprintf(msg_out, "LCD Init result: %ld.\r\n", ret);
 	HAL_UART_Transmit(&huart3, (uint8_t *)msg_out, strlen(msg_out)+1, 0xff);
 
 	ret = BSP_LCD_SetOrientation(0, LCD_ORIENTATION_LANDSCAPE);
