@@ -35,53 +35,33 @@ uint16_t keypad_get_state(void)
 {
 	uint8_t i;
 	uint16_t state = 0x0000;
-	/*bool any = false;
 
-	// pull all rows low
+	// pull all back low
+	for (i = 0; i < 4; i++)
+	{
+		HAL_GPIO_WritePin(keypad_columns[i].port, keypad_columns[i].pin, GPIO_PIN_RESET);
+	}
+
+	for (uint8_t c = 0; c < 4; c++)
+	{
+		HAL_GPIO_WritePin(keypad_columns[c].port, keypad_columns[c].pin, GPIO_PIN_SET);
+
+		for (uint8_t r = 0; r < 4; r++)
+		{
+			if (HAL_GPIO_ReadPin(keypad_rows[r].port, keypad_rows[r].pin))
+			{
+				state |= (1 << keypad_values[r][c]);
+			}
+		}
+
+		HAL_GPIO_WritePin(keypad_columns[c].port, keypad_columns[c].pin, GPIO_PIN_RESET);
+	}
+
+	// pull all back low
 	for (i = 0; i < 4; i++)
 	{
 		HAL_GPIO_WritePin(keypad_rows[i].port, keypad_rows[i].pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(keypad_columns[i].port, keypad_columns[i].pin, GPIO_PIN_RESET);
 	}
-	// pull all columns high
-	for (i = 0; i < 4; i++)
-	{
-		HAL_GPIO_WritePin(keypad_columns[i].port, keypad_columns[i].pin, GPIO_PIN_SET);
-	}
-	// check if any rows are now high
-	for (i = 0; i < 4; i++)
-	{
-		if (HAL_GPIO_ReadPin(keypad_rows[i].port, keypad_rows[i].pin))
-		{
-			any = true;
-			break;
-		}
-	}
-
-	if (any)
-	{*/
-		// pull all back low
-		for (i = 0; i < 4; i++)
-		{
-			HAL_GPIO_WritePin(keypad_rows[i].port, keypad_rows[i].pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(keypad_columns[i].port, keypad_columns[i].pin, GPIO_PIN_RESET);
-		}
-
-		for (uint8_t c = 0; c < 4; c++)
-		{
-			HAL_GPIO_WritePin(keypad_columns[c].port, keypad_columns[c].pin, GPIO_PIN_SET);
-
-			for (uint8_t r = 0; r < 4; r++)
-			{
-				if (HAL_GPIO_ReadPin(keypad_rows[r].port, keypad_rows[r].pin))
-				{
-					state |= (1 << keypad_values[r][c]);
-				}
-			}
-
-			HAL_GPIO_WritePin(keypad_columns[c].port, keypad_columns[c].pin, GPIO_PIN_RESET);
-		}
-
-	//}
-
 	return state;
 }

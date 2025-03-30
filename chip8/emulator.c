@@ -96,6 +96,10 @@ bool run(Chip8_t *chip8)
     // start TIMER 2 whose callback is set to decrement our counters
 	HAL_TIM_Base_Start_IT(&htim2);
 
+	HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_1);
+	htim9.Instance->ARR = 40908;
+	htim9.Instance->CCR1 = 20454;
+
     while (chip8->registers->PC < 0xFFF && !should_terminate && !chip8->emu_state->should_reset)
     {
     	while (hardware_timer_short_counter < 4)
@@ -159,8 +163,15 @@ bool run(Chip8_t *chip8)
             // on STM32 this is handled by the TIMER 2 interrupt
 
             // TODO: when audio is reimplemented, the audio timer should be handled here
-			/*if (--chip8->registers->ST == 0)
-				set_audio(chip8->audio_stream, false);*/
+			if (chip8->registers->ST <= 0)
+			{
+				HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_1);
+			}
+			else
+			{
+				htim9.Instance->ARR = 40908 / (chip8->registers->ST );
+				htim9.Instance->CCR1 = 20454 / (chip8->registers->ST);
+			}
         }
 
         //HAL_Delay(1);
@@ -182,6 +193,7 @@ bool run(Chip8_t *chip8)
         */
     }
 
+	HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_1);
     HAL_Delay(25);
 
     /*
@@ -456,6 +468,10 @@ void execute_instruction(Chip8_t *chip8, Chip8Instruction_t *instruction, WINDOW
         case OP_LD_ST_VX:
             if (chip8->registers->ST != Vx)
             {
+            	chip8->registers->ST = Vx;
+				htim9.Instance->ARR = 40908 / (chip8->registers->ST);
+				htim9.Instance->CCR1 = 20454 / (chip8->registers->ST);
+				HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
                // set_audio(chip8->audio_stream, (chip8->registers->ST = Vx) > 0);
             }
             break;
