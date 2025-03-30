@@ -21,15 +21,18 @@
 void init_display(DisplayLayout_t *layout)
 {
 	gfx_init(0);
-	layout->window_chip8 = gfx_bytes_to_binary_sprite(32, 8, NULL);
+	layout->window_chip8 = gfx_create_window(0, 40, 320, 160);
+	layout->display_chip8 = gfx_bytes_to_binary_sprite(32, 8, NULL);
+	gfx_select_window(layout->window_chip8);
 }
 
 void render_display(Chip8_t *chip8, WINDOW *window_chip8)
 {
-	gfx_bytes_to_binary_sprite_nonalloc(window_chip8, 32, 8, chip8->display_memory);
+	gfx_bytes_to_binary_sprite_nonalloc(chip8->layout.display_chip8, 32, 8, chip8->display_memory);
+	window_chip8->state = GFXWIN_WRITING;
 	gfx_fill_screen(color_blue);
-	gfx_draw_binary_sprite(window_chip8, 32, 26, color_green, 4);
-	gfx_push_to_screen();
+	gfx_draw_binary_sprite(chip8->layout.display_chip8, 0, 0, color_green, 5);
+	window_chip8->state = GFXWIN_DIRTY;
 }
 
 void render_disassembly(Chip8Instruction_t *instruction, WINDOW *window_disassembly)

@@ -11,12 +11,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "screen.h"
 
 #define GFX_SCREEN_WIDTH 320
 #define GFX_SCREEN_HEIGHT 240
-#define GFX_BUFFER_SIZE_BYTES (GFX_SCREEN_WIDTH * GFX_SCREEN_HEIGHT * 2)
+#define GFX_SCREEN_SIZE_BYTES (GFX_SCREEN_WIDTH * GFX_SCREEN_HEIGHT * 2)
 
 #define R565_MAX 31
 #define G565_MAX 63
@@ -54,8 +55,40 @@
   ((byte) & 0x02 ? '1' : '0'), \
   ((byte) & 0x01 ? '1' : '0')
 
+// TODO: figure out if this is better or worse than using 'uint8_t *' or 'uint16_t'
 typedef uint8_t Color565_t[2];
 
+typedef enum GfxWindowState
+{
+	GFXWIN_CLEAN = 0,
+	GFXWIN_WRITING = 1,
+	GFXWIN_DIRTY = 2,
+	GFXWIN_READING = 3,
+} GfxWindowState_t;
+
+/**
+ * @typedef GfxWindow_t
+ * @brief GfxWindow_t represents a target region on the screen and an associated pixel buffer.
+ * The field widths are restricted to an absurd theoretical max resolution of 4095*4095.
+ * The benefits/drawbacks of this are still to be determined.
+ * TODO: figure out if restricting the field widths has either beneficial or detrimental effects.
+ */
+typedef struct GfxWindow
+{
+	GfxWindowState_t state : 4;
+	uint16_t x : 12;
+	uint16_t y : 12;
+	uint16_t width : 12;
+	uint16_t height : 12;
+	uint32_t size_bytes : 24;
+	uint8_t buffer[];
+} GfxWindow_t;
+
+/**
+ * @typedef BinarySprite_t
+ * @brief BinarySprite_t uses individual bits to minimally represent a two-dimensional shape.
+ * The specifics of color, position, scale etc. can be decided later by the application.
+ */
 typedef struct BinarySprite
 {
 	uint16_t height_pixels;
@@ -77,6 +110,10 @@ typedef struct RectSprite565
 	Color565_t pixel_colors[];
 } RectSprite565_t;
 
+extern UART_HandleTypeDef huart3;
+
+extern bool gfx_dirty;
+
 extern Color565_t color_black;
 extern Color565_t color_white;
 extern Color565_t color_red;
@@ -86,8 +123,12 @@ extern Color565_t color_cyan;
 extern Color565_t color_magenta;
 extern Color565_t color_yellow;
 
+extern GfxWindow_t *selected_window;
+
 void gfx_init(uint32_t orientation);
-void gfx_push_to_screen(void);
+GfxWindow_t *gfx_create_window(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+void gfx_select_window(GfxWindow_t *window);
+void gfx_push_to_screen(GfxWindow_t *window);
 
 /**
  * @brief takes in 0-100 percentages of RGB values and maps them to an approximate 565 representation

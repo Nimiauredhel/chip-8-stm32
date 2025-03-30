@@ -1,5 +1,46 @@
 #include "emulator.h"
 
+static Chip8_t *instance = NULL;
+static uint16_t render_queue = 0;
+static uint16_t hardware_timer_short_counter = 0;
+static uint16_t hardware_timer_long_counter = 0;
+
+/**
+ * Set timer to 4,500Hz.
+ * Logic will wait for short counter to hit 8 to achieve 562.5hz.
+ * Rendering + DT & ST will wait for long counter to hit 75 to achieve 60hz.
+ * @param htim
+ */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
+{
+	hardware_timer_short_counter++;
+
+	if (hardware_timer_long_counter >= 75)
+	{
+		hardware_timer_long_counter = 0;
+
+		if (instance != NULL)
+		{
+			// deincrementing timer registers
+			if (instance->registers->DT > 0) instance->registers->DT--;
+			if (instance->registers->ST > 0) instance->registers->ST--;
+		}
+
+		// TODO: formalize this
+		if (/*render_queue > 15 ||*/
+			(render_queue > 0))
+		{
+			render_queue = 0;
+			render_display(instance, instance->layout.window_chip8);
+			gfx_push_to_screen(selected_window);
+		}
+	}
+	else
+	{
+		hardware_timer_long_counter++;
+	}
+}
+
 void emu_handle_input(Chip8_t *chip8)
 {
     if (!check_input(chip8->emu_state->emu_key_states, EMU_KEY_ANY_IDX)) return;
@@ -42,7 +83,6 @@ bool run(Chip8_t *chip8)
     chip8->emu_state->step_counter = 0;
     chip8->emu_state->runtime_seconds_counter = 0.0f;
     chip8->emu_state->cycle_seconds_counter = 0.0f;
-    chip8->emu_state->chip8_timers_counter = 0.016666667f;
 
     init_display(&chip8->layout);
     //chip8->audio_stream = init_audio();
@@ -51,10 +91,18 @@ bool run(Chip8_t *chip8)
     //render_emulator_state(chip8->emu_state, chip8->layout.window_emu);
 
     //usleep(chip8->emu_state->ideal_step_delay_us);
-    HAL_Delay(2);
+    instance = chip8;
+    HAL_Delay(1);
+    // start TIMER 2 whose callback is set to decrement our counters
+	HAL_TIM_Base_Start_IT(&htim2);
 
     while (chip8->registers->PC < 0xFFF && !should_terminate && !chip8->emu_state->should_reset)
     {
+    	while (hardware_timer_short_counter < 4)
+    	{
+
+    	}
+    	hardware_timer_short_counter = 0;
         // getting the start clock of the cycle to approximate our ideal frequency
         //clock_gettime(CLOCK_MONOTONIC, (struct timespec *)&chip8->emu_state->start_clock);
 
@@ -106,32 +154,27 @@ bool run(Chip8_t *chip8)
             // jump/skip instructions account for this by decrementing the PC to compensate.
             // TODO: figure out if incrementing in the instruction code could be an improvement
             chip8->registers->PC += 2;
-            // deincrementing timer registers
-           // if (chip8->emu_state->chip8_timers_counter <= 0.0f)
-            {
-                //chip8->emu_state->chip8_timers_counter = 0.016666667f;
-                if (chip8->registers->DT > 0) chip8->registers->DT--;
-                if (chip8->registers->ST > 0)
-                {
-                    /*if (--chip8->registers->ST == 0)
-                        set_audio(chip8->audio_stream, false);*/
-                }
-            }
+
+            // timers were decremented here in the Linux version,
+            // on STM32 this is handled by the TIMER 2 interrupt
+
+            // TODO: when audio is reimplemented, the audio timer should be handled here
+			/*if (--chip8->registers->ST == 0)
+				set_audio(chip8->audio_stream, false);*/
         }
 
+        //HAL_Delay(1);
         // timing the cycle and compensating as necessary
-       /* chip8->emu_state->cycle_seconds_counter = seconds_since_clock(&chip8->emu_state->start_clock);
+        /*chip8->emu_state->cycle_seconds_counter = seconds_since_clock(&chip8->emu_state->start_clock);
         chip8->emu_state->difference_step_delay_us = chip8->emu_state->ideal_step_delay_us - (1000000 * chip8->emu_state->cycle_seconds_counter);
 
         if (chip8->emu_state->difference_step_delay_us > 0)
         {
             //usleep(chip8->emu_state->difference_step_delay_us);
-            HAL_Delay(chip8->emu_state->difference_step_delay_us / 1000);
+            //HAL_Delay(chip8->emu_state->difference_step_delay_us / 1000);
             chip8->emu_state->cycle_seconds_counter = seconds_since_clock(&chip8->emu_state->start_clock);
         }
-        */
 
-        /*
         chip8->emu_state->chip8_timers_counter -= chip8->emu_state->cycle_seconds_counter;
         chip8->emu_state->runtime_seconds_counter += chip8->emu_state->cycle_seconds_counter;
         chip8->emu_state->avg_cps = chip8->emu_state->avg_cps == 0.0f ? 1.0f / chip8->emu_state->cycle_seconds_counter
@@ -174,7 +217,7 @@ void execute_instruction(Chip8_t *chip8, Chip8Instruction_t *instruction, WINDOW
             break;
         case OP_CLS:
             explicit_bzero(chip8->display_memory, CHIP8_DISPLAY_BYTES);
-            render_display(chip8, window_chip8);
+            render_queue++;
             break;
         case OP_RET:
             chip8->registers->PC = chip8->registers->STACK_RET[chip8->registers->SP];
@@ -337,7 +380,7 @@ void execute_instruction(Chip8_t *chip8, Chip8Instruction_t *instruction, WINDOW
                 }
             }
 
-            render_display(chip8, window_chip8);
+            render_queue++;
             break;
             // undefining the DRW instruction aliases
 #undef COL_ORIG

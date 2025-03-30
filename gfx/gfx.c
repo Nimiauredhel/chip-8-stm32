@@ -8,7 +8,17 @@
 #include "gfx.h"
 #include <stdbool.h>
 
-//extern UART_HandleTypeDef huart3;
+/**
+ * @brief Global gfx.c variable representing the current target window for gfx operations.
+ * TODO: add support for:
+ * TODO: * defining MULTIPLE active windows
+ * TODO: * configurable draw order
+ * TODO: * individual refresh rates
+ * TODO: * handling overlaps without resorting to one big buffer,
+ * TODO:   or figure out how to effectively use one big buffer
+ * TODO:   but selectively push parts of it to the screen.
+ */
+GfxWindow_t *selected_window = NULL;
 
 // RGB565 2 byte format: [ggGbbbbB][rrrrRggg]
 Color565_t color_black = { 0b00000000, 0b00000000 };
@@ -20,17 +30,55 @@ Color565_t color_cyan = { 0b11111111, 0b00000111 };
 Color565_t color_magenta = { 0b00011111, 0b11111000 };
 Color565_t color_yellow = { 0b11100000, 0b11111111 };
 
-static uint8_t gfx_buffer[GFX_BUFFER_SIZE_BYTES];
-
 void gfx_init(uint32_t orientation)
 {
 	screen_init(orientation);
 }
 
-void gfx_push_to_screen(void)
+GfxWindow_t *gfx_create_window(uint16_t x, uint16_t y, uint16_t width, uint16_t height)
 {
-    screen_fill_rect_loop(gfx_buffer, GFX_BUFFER_SIZE_BYTES,
-    		0, 0, screen_get_x_size(), screen_get_y_size());
+	uint32_t buffer_size = width*height*2;
+	GfxWindow_t *new_window = malloc(sizeof(GfxWindow_t) + buffer_size);
+	explicit_bzero(new_window->buffer, buffer_size);
+	new_window->state = GFXWIN_CLEAN;
+	new_window->size_bytes = buffer_size;
+	new_window->x = x;
+	new_window->y = y;
+	new_window->width = width;
+	new_window->height = height;
+	return new_window;
+}
+
+void gfx_select_window(GfxWindow_t *window)
+{
+	/**
+	 * TEMPORARY use-lock measure
+	 * TODO: replace this with a mutex or more thought-out method
+	 */
+	while (selected_window != NULL
+			&& selected_window->state != GFXWIN_CLEAN)
+	{
+		HAL_Delay(1);
+	}
+
+	selected_window = window;
+}
+
+void gfx_push_to_screen(GfxWindow_t *window)
+{
+	if (window == NULL)
+	{
+		// no more default full-screen buffer -
+		// if we WANT a full screen buffer, it's easy to define one as a window
+		return;
+	}
+	else if (window->state == GFXWIN_DIRTY)
+	{
+		window->state = GFXWIN_READING;
+		screen_fill_rect_loop(window->buffer, window->size_bytes,
+				window->x, window->y, window->width, window->height);
+		window->state = GFXWIN_CLEAN;
+	}
 }
 
 void gfx_rgb_to_565_nonalloc(Color565_t dest, uint8_t red_percent, uint8_t green_percent, uint8_t blue_percent)
@@ -85,15 +133,22 @@ BinarySprite_t* gfx_bytes_to_binary_sprite(uint16_t height_pixels, uint8_t width
 
 void gfx_fill_screen(const Color565_t fill_color)
 {
-    for (uint32_t idx = 0; idx < GFX_BUFFER_SIZE_BYTES; idx+=2)
+	if (selected_window == NULL) return;
+
+	uint32_t idx;
+
+	//memset(selected_window->buffer, *((uint16_t *)fill_color), selected_window->size_bytes);
+
+    for (idx = 0; idx < selected_window->size_bytes; idx+=2)
     {
-    	gfx_buffer[idx] = fill_color[0];
-    	gfx_buffer[idx+1] = fill_color[1];
+    	selected_window->buffer[idx] = fill_color[0];
+    	selected_window->buffer[idx+1] = fill_color[1];
     }
 }
 
 void gfx_fill_rect_loop(const uint8_t *data, uint32_t data_length, uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height)
 {
+	if (selected_window == NULL) return;
 	if (width * height < 1) return;
 
     uint32_t target_size = width * height * 2;
@@ -107,10 +162,10 @@ void gfx_fill_rect_loop(const uint8_t *data, uint32_t data_length, uint16_t x_or
 
     for (uint32_t idx = 0; idx < target_size; idx+=2)
     {
-		dest_idx = 2 * (dest_x + (dest_y * 320));
+		dest_idx = 2 * (dest_x + (dest_y * selected_window->width));
 
-        memcpy(gfx_buffer+dest_idx, data+src_idx, 1);
-        memcpy(gfx_buffer+dest_idx+1, data+src_idx+1, 1);
+        selected_window->buffer[dest_idx] = data[src_idx];
+        selected_window->buffer[dest_idx+1] = data[src_idx+1];
 
 		src_idx+=2;
         if (src_idx >= data_length) src_idx = 0;
@@ -129,14 +184,15 @@ void gfx_fill_rect_loop(const uint8_t *data, uint32_t data_length, uint16_t x_or
 
 void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, const Color565_t fill_color)
 {
+	if (selected_window == NULL) return;
 	if (width * height < 1) return;
 
     uint32_t buffer_size = width * height * 2;
 	uint32_t buffer_divisor = 1;
 
-	if (buffer_size > GFX_BUFFER_SIZE_BYTES)
+	if (buffer_size > selected_window->size_bytes)
 	{
-		buffer_divisor = (buffer_size / GFX_BUFFER_SIZE_BYTES) + 1;
+		buffer_divisor = (buffer_size / selected_window->size_bytes) + 1;
 		buffer_size /= buffer_divisor;
 	}
 
@@ -149,10 +205,10 @@ void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t w
 
     for (uint32_t idx = 0; idx < buffer_size; idx+=2)
     {
-		dest_idx = 2 * (dest_x + (dest_y * 320));
+		dest_idx = 2 * (dest_x + (dest_y * selected_window->width));
 
-		gfx_buffer[dest_idx] = fill_color[0];
-		gfx_buffer[dest_idx+1] = fill_color[1];
+		selected_window->buffer[dest_idx] = fill_color[0];
+		selected_window->buffer[dest_idx+1] = fill_color[1];
 
 		dest_x++;
 
@@ -174,9 +230,7 @@ static void gfx_draw_binary_byte(uint8_t byte, uint16_t x_origin, uint16_t y_ori
 
     for (uint8_t bit = 0; bit < 8; bit++)
     {
-		bit_on = byte & (1 << (7 - bit));
-
-		if (bit_on)
+		if (byte & (1 << (7 - bit)))
 		{
 			if (start_bit == -1)
 			{

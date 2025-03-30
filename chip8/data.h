@@ -7,7 +7,7 @@
 #include "audio.h"
 #include "gfx.h"
 
-typedef BinarySprite_t WINDOW;
+typedef GfxWindow_t WINDOW;
 
 typedef union ComboRegister
 {
@@ -51,6 +51,7 @@ typedef struct EmulatorState
 typedef struct DisplayLayout
 {
     WINDOW *window_chip8;
+    BinarySprite_t *display_chip8;
 } DisplayLayout_t;
 
 typedef struct Chip8

@@ -101,17 +101,6 @@ BinarySprite_t *hello_sprite;
 BinarySprite_t *world_sprite;
 BinarySprite_t *alien_sprite;
 
-bool gfx_dirty = false;
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
-{
-	if (gfx_dirty)
-	{
-		gfx_dirty = false;
-		gfx_push_to_screen();
-	}
-}
-
 void app_init(void)
 {
 	gfx_init(LCD_ORIENTATION_LANDSCAPE);
@@ -133,8 +122,6 @@ void app_init(void)
 	hello_sprite = gfx_bytes_to_binary_sprite(5, 5, hello_bytes);
 	world_sprite = gfx_bytes_to_binary_sprite(5, 5, world_bytes);
 	alien_sprite = gfx_bytes_to_binary_sprite(8, 2, alien_bytes);
-
-	HAL_TIM_Base_Start_IT(&htim2);
 }
 
 void app_loop(void)
