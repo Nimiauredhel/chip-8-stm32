@@ -110,6 +110,7 @@ typedef struct RectSprite565
 	Color565_t pixel_colors[];
 } RectSprite565_t;
 
+extern TIM_HandleTypeDef htim2;
 extern UART_HandleTypeDef huart3;
 
 extern bool gfx_dirty;

@@ -30,9 +30,16 @@ Color565_t color_cyan = { 0b11111111, 0b00000111 };
 Color565_t color_magenta = { 0b00011111, 0b11111000 };
 Color565_t color_yellow = { 0b11100000, 0b11111111 };
 
+void GFX_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
+{
+	gfx_push_to_screen(selected_window);
+}
+
 void gfx_init(uint32_t orientation)
 {
 	screen_init(orientation);
+	HAL_TIM_RegisterCallback(&htim2, HAL_TIM_PERIOD_ELAPSED_CB_ID, GFX_TIM_PeriodElapsedCallback);
+	HAL_TIM_Base_Start_IT(&htim2);
 }
 
 GfxWindow_t *gfx_create_window(uint16_t x, uint16_t y, uint16_t width, uint16_t height)

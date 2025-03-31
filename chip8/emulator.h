@@ -8,8 +8,9 @@
 #include "parser.h"
 #include "input.h"
 #include "audio.h"
+#include "pitches.h"
 
-extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim9;
 
 bool run(Chip8_t *chip8);

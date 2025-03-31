@@ -11,20 +11,19 @@ static uint16_t hardware_timer_long_counter = 0;
  * Rendering + DT & ST will wait for long counter to hit 75 to achieve 60hz.
  * @param htim
  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
+void CHIP8_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
+	if (instance == NULL) return;
+
 	hardware_timer_short_counter++;
 
 	if (hardware_timer_long_counter >= 75)
 	{
 		hardware_timer_long_counter = 0;
 
-		if (instance != NULL)
-		{
-			// deincrementing timer registers
-			if (instance->registers->DT > 0) instance->registers->DT--;
-			if (instance->registers->ST > 0) instance->registers->ST--;
-		}
+		// deincrementing timer registers
+		if (instance->registers->DT > 0) instance->registers->DT--;
+		if (instance->registers->ST > 0) instance->registers->ST--;
 
 		// TODO: formalize this
 		if (/*render_queue > 15 ||*/
@@ -32,7 +31,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 		{
 			render_queue = 0;
 			render_display(instance, instance->layout.window_chip8);
-			gfx_push_to_screen(selected_window);
 		}
 	}
 	else
@@ -45,7 +43,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   if(GPIO_Pin == USER_Btn_Pin)
   {
-	  instance->emu_state->should_reset = true;
+	  if (instance != NULL)
+	  {
+		  instance->emu_state->should_reset = true;
+	  }
   }
   else
   {
@@ -106,12 +107,13 @@ bool run(Chip8_t *chip8)
     //usleep(chip8->emu_state->ideal_step_delay_us);
     instance = chip8;
     HAL_Delay(1);
-    // start TIMER 2 whose callback is set to decrement our counters
-	HAL_TIM_Base_Start_IT(&htim2);
+    // start TIMER 3 whose callback is set to decrement our counters
+	HAL_TIM_RegisterCallback(&htim3, HAL_TIM_PERIOD_ELAPSED_CB_ID, CHIP8_TIM_PeriodElapsedCallback);
+	HAL_TIM_Base_Start_IT(&htim3);
 
 	HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_1);
-	htim9.Instance->ARR = 40908;
-	htim9.Instance->CCR1 = 20454;
+	htim9.Instance->ARR = A4;
+	htim9.Instance->CCR1 = A4/2;
 
     while (chip8->registers->PC < 0xFFF && !should_terminate && !chip8->emu_state->should_reset)
     {
@@ -182,8 +184,8 @@ bool run(Chip8_t *chip8)
 			}
 			else
 			{
-				htim9.Instance->ARR = 40908 / (chip8->registers->ST );
-				htim9.Instance->CCR1 = 20454 / (chip8->registers->ST);
+				htim9.Instance->ARR = A4 / (chip8->registers->ST );
+				htim9.Instance->CCR1 = (A4 / 2) / (chip8->registers->ST);
 			}
         }
 
@@ -484,8 +486,8 @@ void execute_instruction(Chip8_t *chip8, Chip8Instruction_t *instruction, WINDOW
             if (chip8->registers->ST != Vx)
             {
             	chip8->registers->ST = Vx;
-				htim9.Instance->ARR = 40908 / (chip8->registers->ST);
-				htim9.Instance->CCR1 = 20454 / (chip8->registers->ST);
+				htim9.Instance->ARR = A4 / (chip8->registers->ST);
+				htim9.Instance->CCR1 = (A4 / 2) / (chip8->registers->ST);
 				HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
                // set_audio(chip8->audio_stream, (chip8->registers->ST = Vx) > 0);
             }
