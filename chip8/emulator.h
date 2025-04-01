@@ -8,7 +8,6 @@
 #include "parser.h"
 #include "input.h"
 #include "audio.h"
-#include "pitches.h"
 
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim9;

@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "common.h"
+#include "pitches.h"
 
 typedef struct AudioData
 {
