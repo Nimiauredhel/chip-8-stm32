@@ -10,6 +10,6 @@
 
 #include <stdint.h>
 
-extern uint8_t font_8x5[128][5];
+extern uint8_t font_8x5[128*5];
 
 #endif /* FONTS_H_ */

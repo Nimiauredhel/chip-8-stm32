@@ -14,6 +14,7 @@
 #include <stdbool.h>
 
 #include "screen.h"
+#include "fonts.h"
 
 #define GFX_SCREEN_WIDTH 320
 #define GFX_SCREEN_HEIGHT 240
@@ -96,6 +97,14 @@ typedef struct BinarySprite
 	uint8_t pixel_mask[];
 } BinarySprite_t;
 
+typedef struct BinarySpriteSheet
+{
+	uint16_t height_pixels;
+	uint8_t width_bytes;
+	uint8_t sprite_count;
+	uint8_t *data;
+} BinarySpriteSheet_t;
+
 // TODO: make a version of this that allows for negative space, like the binary sprite,
 // TODO: without making every single cell bigger (like a bool would).
 // TODO: a possible solution is variable length enconding for streaks of color/nothing
@@ -124,6 +133,8 @@ extern Color565_t color_cyan;
 extern Color565_t color_magenta;
 extern Color565_t color_yellow;
 
+extern BinarySpriteSheet_t default_font;
+
 extern GfxWindow_t *selected_window;
 
 void gfx_init(uint32_t orientation);
@@ -148,6 +159,8 @@ void gfx_fill_rect_loop(const uint8_t *data, uint32_t data_length, uint16_t x_or
 void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t width, uint16_t height, const Color565_t fill_color);
 
 void gfx_draw_binary_sprite(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, const Color565_t color, uint8_t scale);
+void gfx_draw_binary_sprite_adhoc(uint16_t height_pixels, uint8_t width_bytes, uint8_t *pixel_mask, uint16_t x_origin, uint16_t y_origin, const Color565_t color, uint8_t scale);
+
 
 void gfx_draw_rect_sprite_565(RectSprite565_t sprite, uint16_t x_origin, uint16_t y_origin);
 void gfx_draw_rect_sprite_565_scaled(RectSprite565_t sprite, uint16_t x_origin, uint16_t y_origin, float scale);

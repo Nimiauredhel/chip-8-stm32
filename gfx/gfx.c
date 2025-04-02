@@ -8,6 +8,14 @@
 #include "gfx.h"
 #include <stdbool.h>
 
+BinarySpriteSheet_t default_font =
+{
+		.height_pixels = 5,
+		.width_bytes = 1,
+		.sprite_count = 128,
+		.data = font_8x5,
+};
+
 /**
  * @brief Global gfx.c variable representing the current target window for gfx operations.
  * TODO: add support for:
@@ -263,17 +271,22 @@ static void gfx_draw_binary_byte(uint8_t byte, uint16_t x_origin, uint16_t y_ori
     }
 }
 
-void gfx_draw_binary_sprite(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, const Color565_t color, uint8_t scale)
+void gfx_draw_binary_sprite_adhoc(uint16_t height_pixels, uint8_t width_bytes, uint8_t *pixel_mask, uint16_t x_origin, uint16_t y_origin, const Color565_t color, uint8_t scale)
 {
     // line by line (possibly naive approach)
 
-    for (uint8_t xb = 0; xb < sprite->width_bytes; xb++)
+    for (uint8_t xb = 0; xb < width_bytes; xb++)
     {
-        for (uint16_t y = 0; y < sprite->height_pixels; y++)
+        for (uint16_t y = 0; y < height_pixels; y++)
         {
-			gfx_draw_binary_byte(sprite->pixel_mask[y + (xb * sprite->height_pixels)], x_origin + scale * (xb * 8), y_origin + (y * scale), color, scale);
+			gfx_draw_binary_byte(pixel_mask[y + (xb * height_pixels)], x_origin + scale * (xb * 8), y_origin + (y * scale), color, scale);
         }
     }
+}
+
+void gfx_draw_binary_sprite(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, const Color565_t color, uint8_t scale)
+{
+	gfx_draw_binary_sprite_adhoc(sprite->height_pixels, sprite->width_bytes, sprite->pixel_mask, x_origin, y_origin, color, scale);
 }
 
 void gfx_draw_rect_sprite_565(RectSprite565_t sprite, uint16_t x_origin, uint16_t y_origin);
