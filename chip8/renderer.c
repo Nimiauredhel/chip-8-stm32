@@ -22,22 +22,34 @@ void init_display(DisplayLayout_t *layout)
 {
 	gfx_init(0);
 
-	layout->window_chip8 = gfx_create_window(0, 40, 320, 160);
+	layout->window_chip8 = gfx_create_window(0, 0, 320, 160);
 	layout->display_chip8 = gfx_bytes_to_binary_sprite(32, 8, NULL);
+	layout->window_emu = gfx_create_window(0, 160, 320, 80);
 
 	gfx_select_window(layout->window_chip8);
 	gfx_fill_screen(color_blue);
+	layout->window_chip8->state = GFXWIN_DIRTY;
 	gfx_show_window(layout->window_chip8);
+
+	gfx_select_window(layout->window_emu);
+	gfx_fill_screen(color_black);
+	layout->window_emu->state = GFXWIN_DIRTY;
+	gfx_show_window(layout->window_emu);
 }
 
 void deinit_display(DisplayLayout_t *layout)
 {
 	gfx_select_window(NULL);
+
 	gfx_hide_window(layout->window_chip8);
+	gfx_hide_window(layout->window_emu);
+
 	free(layout->window_chip8);
 	layout->window_chip8 = NULL;
 	free(layout->display_chip8);
 	layout->display_chip8 = NULL;
+	free(layout->window_emu);
+	layout->window_emu = NULL;
 }
 
 void render_display(Chip8_t *chip8, WINDOW *window_chip8)
@@ -53,33 +65,37 @@ void render_display(Chip8_t *chip8, WINDOW *window_chip8)
 
 void render_disassembly(Chip8Instruction_t *instruction, WINDOW *window_disassembly)
 {
-	/*
-    static char line_memory[16][16] = {0};
+    /*static char line_memory[16][16] = {0};
     static int8_t tail_idx = 0;
     int8_t idx = tail_idx;
 
     snprintf_instruction(line_memory[tail_idx], 16, instruction);
+    */
 
-    werase(window_disassembly);
+	char disassembled_instruction[16] = {0};
+    snprintf_instruction(disassembled_instruction, 16, instruction);
 
-    wattron(window_disassembly, COLOR_PAIR(COLOR_PAIR_BG_YELLOW));
-    mvwprintw(window_disassembly, 3, 2, "%s", line_memory[idx]);
-    wattroff(window_disassembly, COLOR_PAIR(COLOR_PAIR_BG_YELLOW));
+	gfx_select_window(window_disassembly);
+	window_disassembly->state = GFXWIN_WRITING;
+	gfx_fill_screen(color_black);
+	gfx_print_string(disassembled_instruction, 0, 0, color_yellow, 3);
+	//gfx_print_string(line_memory[idx], 2, 3, color_yellow, 1);
 
+	/*
     for (uint8_t i = 1; i < 16; i++)
     {
         idx = tail_idx - i;
         if (idx < 0) idx += 16;
-        wattron(window_disassembly, COLOR_PAIR(COLOR_PAIR_TEXT_MAGENTA + (idx % 2)));
-        mvwprintw(window_disassembly, 3-(i%4), 2 + (12*(i/4)), "%s", line_memory[idx]);
-        wattroff(window_disassembly, COLOR_PAIR(COLOR_PAIR_TEXT_MAGENTA + (idx % 2)));
+		gfx_print_string(line_memory[idx], 2 + (12*(i/4)), 3-(i%4), color_yellow, 1);
     }
+    */
 
+    /*
     tail_idx++;
     if (tail_idx > 15) tail_idx = 0;
-
-    wrefresh(window_disassembly);
     */
+
+	window_disassembly->state = GFXWIN_DIRTY;
 }
 
 void render_registers(Chip8Registers_t *registers, WINDOW *window_registers)

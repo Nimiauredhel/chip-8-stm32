@@ -16,30 +16,8 @@ void CHIP8_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 	if (instance == NULL) return;
 
 	hardware_timer_short_counter++;
+	hardware_timer_long_counter++;
 
-	if (hardware_timer_long_counter >= 75)
-	{
-		hardware_timer_long_counter = 0;
-
-		// deincrementing timer registers
-		if (instance->registers->DT > 0) instance->registers->DT--;
-		if (instance->registers->ST > 0) instance->registers->ST--;
-
-		// the GFXWIN_CLEAN check is critical to avoid ISR deadlock!
-		// TODO: use a more elegant method to avoid deadlock
-		// TODO: formalize this
-		if (/*render_queue > 15 ||*/
-			(render_queue > 0)
-			&& instance->layout.window_chip8->state == GFXWIN_CLEAN)
-		{
-			render_queue = 0;
-			render_display(instance, instance->layout.window_chip8);
-		}
-	}
-	else
-	{
-		hardware_timer_long_counter++;
-	}
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -48,7 +26,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   {
 	  if (instance != NULL)
 	  {
-		  instance->emu_state->should_reset = true;
+		  instance->emu_state->flags |= EMU_FLAG_RESET;
 	  }
   }
   else
@@ -66,13 +44,13 @@ void emu_handle_input(Chip8_t *chip8)
         should_terminate = true;
 
     if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_RESET_IDX))
-        chip8->emu_state->should_reset = true;
+        chip8->emu_state->flags |= EMU_FLAG_RESET;
 
     if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_STEP_MODE_IDX))
-        chip8->emu_state->step_mode = !chip8->emu_state->step_mode;
+        chip8->emu_state->flags ^= EMU_FLAG_STEP_MODE;
 
     if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_STEP_ONE_IDX))
-        chip8->emu_state->step_pressed = true;
+        chip8->emu_state->flags |= EMU_FLAG_STEP_PRESSED;
 
     if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_SPEED_UP_IDX))
     {
@@ -90,11 +68,7 @@ void emu_handle_input(Chip8_t *chip8)
 
 bool run(Chip8_t *chip8)
 {
-    chip8->emu_state->should_reset = false;
-    chip8->emu_state->step_mode = false;
-    chip8->emu_state->step_pressed = false;
-    chip8->emu_state->loop = false;
-
+	chip8->emu_state->flags = EMU_FLAG_NONE;
     chip8->emu_state->speed_modifier = 1.0f;
     chip8->emu_state->ideal_step_delay_us = EMU_DEFAULT_STEP_DELAY_US;
     chip8->emu_state->step_counter = 0;
@@ -118,7 +92,7 @@ bool run(Chip8_t *chip8)
 	htim9.Instance->ARR = A4;
 	htim9.Instance->CCR1 = A4/2;
 
-    while (chip8->registers->PC < 0xFFF && !should_terminate && !chip8->emu_state->should_reset)
+    while (chip8->registers->PC < 0xFFF && !should_terminate && !(chip8->emu_state->flags & EMU_FLAG_RESET))
     {
     	while (hardware_timer_short_counter < 4)
     	{
@@ -141,7 +115,7 @@ bool run(Chip8_t *chip8)
 
         if (should_terminate) break;
 
-        if (chip8->emu_state->step_mode
+        if ((chip8->emu_state->flags & EMU_FLAG_STEP_MODE)
         && !check_input(chip8->emu_state->emu_key_states, EMU_KEY_STEP_ONE_IDX))
         {
             continue;
@@ -163,14 +137,14 @@ bool run(Chip8_t *chip8)
 
         // rendering the disassembled instruction
         // TODO: make this optional
-        //render_disassembly(chip8->instruction, chip8->layout.window_disassembly);
+        //render_disassembly(chip8->instruction, chip8->layout.window_emu);
 
         // executing the actual instruction;
         // this also refreshes the display if necessary
         // TODO: figure out if setting a display_dirty flag would be better
         execute_instruction(chip8, chip8->instruction, chip8->layout.window_chip8);
 
-        if (!chip8->emu_state->loop)
+        if (!(chip8->emu_state->flags & EMU_FLAG_LOOP))
         {
             // default PC incrementation following execution;
             // jump/skip instructions account for this by decrementing the PC to compensate.
@@ -190,25 +164,44 @@ bool run(Chip8_t *chip8)
 				htim9.Instance->ARR = A4 / (chip8->registers->ST );
 				htim9.Instance->CCR1 = (A4 / 2) / (chip8->registers->ST);
 			}
+
+			if (hardware_timer_long_counter >= 75)
+			{
+				hardware_timer_long_counter = 0;
+
+				// deincrementing timer registers
+				if (instance->registers->DT > 0) instance->registers->DT--;
+				if (instance->registers->ST > 0) instance->registers->ST--;
+
+				// the GFXWIN_CLEAN check is critical to avoid ISR deadlock!
+				// TODO: use a more elegant method to avoid deadlock
+				// TODO: formalize this
+				if (/*render_queue > 15 ||*/
+					(render_queue > 0))
+				{
+					render_queue = 0;
+					render_display(instance, instance->layout.window_chip8);
+				}
+			}
+
+			//HAL_Delay(1);
+			// timing the cycle and compensating as necessary
+			/*chip8->emu_state->cycle_seconds_counter = seconds_since_clock(&chip8->emu_state->start_clock);
+			chip8->emu_state->difference_step_delay_us = chip8->emu_state->ideal_step_delay_us - (1000000 * chip8->emu_state->cycle_seconds_counter);
+
+			if (chip8->emu_state->difference_step_delay_us > 0)
+			{
+				//usleep(chip8->emu_state->difference_step_delay_us);
+				//HAL_Delay(chip8->emu_state->difference_step_delay_us / 1000);
+				chip8->emu_state->cycle_seconds_counter = seconds_since_clock(&chip8->emu_state->start_clock);
+			}
+
+			chip8->emu_state->chip8_timers_counter -= chip8->emu_state->cycle_seconds_counter;
+			chip8->emu_state->runtime_seconds_counter += chip8->emu_state->cycle_seconds_counter;
+			chip8->emu_state->avg_cps = chip8->emu_state->avg_cps == 0.0f ? 1.0f / chip8->emu_state->cycle_seconds_counter
+			: ((1.0f / chip8->emu_state->cycle_seconds_counter) + chip8->emu_state->avg_cps) / 2.0f;
+			*/
         }
-
-        //HAL_Delay(1);
-        // timing the cycle and compensating as necessary
-        /*chip8->emu_state->cycle_seconds_counter = seconds_since_clock(&chip8->emu_state->start_clock);
-        chip8->emu_state->difference_step_delay_us = chip8->emu_state->ideal_step_delay_us - (1000000 * chip8->emu_state->cycle_seconds_counter);
-
-        if (chip8->emu_state->difference_step_delay_us > 0)
-        {
-            //usleep(chip8->emu_state->difference_step_delay_us);
-            //HAL_Delay(chip8->emu_state->difference_step_delay_us / 1000);
-            chip8->emu_state->cycle_seconds_counter = seconds_since_clock(&chip8->emu_state->start_clock);
-        }
-
-        chip8->emu_state->chip8_timers_counter -= chip8->emu_state->cycle_seconds_counter;
-        chip8->emu_state->runtime_seconds_counter += chip8->emu_state->cycle_seconds_counter;
-        chip8->emu_state->avg_cps = chip8->emu_state->avg_cps == 0.0f ? 1.0f / chip8->emu_state->cycle_seconds_counter
-        : ((1.0f / chip8->emu_state->cycle_seconds_counter) + chip8->emu_state->avg_cps) / 2.0f;
-        */
     }
 
     instance = NULL;
@@ -224,7 +217,7 @@ bool run(Chip8_t *chip8)
     */
 
     // return the "reset" flag, telling the program whether to quit or create another Chip-8 instance
-    return chip8->emu_state->should_reset;
+    return (chip8->emu_state->flags & EMU_FLAG_RESET);
 }
 
 void execute_instruction(Chip8_t *chip8, Chip8Instruction_t *instruction, WINDOW *window_chip8)
@@ -456,7 +449,7 @@ void execute_instruction(Chip8_t *chip8, Chip8Instruction_t *instruction, WINDOW
             // "halt execution" by setting a "loop" flag,
             // which the emulator will enforce by not incrementing any counters,
             // thereby freezing the state and repeating this check until it is satisfied
-            chip8->emu_state->loop = true;
+            chip8->emu_state->flags |= EMU_FLAG_LOOP;
 
             // due to input buffering, it is not enough to check for ANY input,
             // but much preferable to select the OLDEST input (LOWEST buffer frames left),
@@ -473,7 +466,7 @@ void execute_instruction(Chip8_t *chip8, Chip8Instruction_t *instruction, WINDOW
                     if(check_input_buffer(chip8->emu_state->chip8_key_states, INDEX) == HIGHEST_BUFFER)
                     {
                         Vx = INDEX;
-                        chip8->emu_state->loop = false;
+                        chip8->emu_state->flags &= ~(EMU_FLAG_LOOP);
                         break;
                     }
                 }

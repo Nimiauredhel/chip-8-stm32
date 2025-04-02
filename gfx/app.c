@@ -197,7 +197,7 @@ void app_loop(void)
 	HAL_Delay(step_delay);
 
 	HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
-	htim9.Instance->ARR = pitch = A2;
+	htim9.Instance->ARR = pitch = A1;
 	htim9.Instance->CCR1 = pitch / 2;
 
 	app_window->state = GFXWIN_WRITING;
@@ -206,7 +206,7 @@ void app_loop(void)
 	while (app_window->state != GFXWIN_CLEAN)
 	HAL_Delay(half_step_delay);
 
-	htim9.Instance->ARR = pitch = B2;
+	htim9.Instance->ARR = pitch = B1;
 	htim9.Instance->CCR1 = pitch/2;
 	app_window->state = GFXWIN_WRITING;
 	gfx_fill_screen(color_red);
@@ -214,7 +214,7 @@ void app_loop(void)
 	while (app_window->state != GFXWIN_CLEAN)
 	HAL_Delay(half_step_delay);
 
-	htim9.Instance->ARR = pitch = Db3;
+	htim9.Instance->ARR = pitch = Db2;
 	htim9.Instance->CCR1 = pitch/2;
 	app_window->state = GFXWIN_WRITING;
 	gfx_fill_screen(color_green);
@@ -222,7 +222,7 @@ void app_loop(void)
 	while (app_window->state != GFXWIN_CLEAN)
 	HAL_Delay(half_step_delay);
 
-	htim9.Instance->ARR = pitch = D3;
+	htim9.Instance->ARR = pitch = D2;
 	htim9.Instance->CCR1 = pitch/2;
 	app_window->state = GFXWIN_WRITING;
 	gfx_fill_screen(color_blue);
@@ -230,7 +230,7 @@ void app_loop(void)
 	while (app_window->state != GFXWIN_CLEAN)
 	HAL_Delay(half_step_delay);
 
-	htim9.Instance->ARR = pitch = E3;
+	htim9.Instance->ARR = pitch = E2;
 	htim9.Instance->CCR1 = pitch/2;
 	app_window->state = GFXWIN_WRITING;
 	gfx_fill_screen(color_cyan);
@@ -238,7 +238,7 @@ void app_loop(void)
 	while (app_window->state != GFXWIN_CLEAN)
 	HAL_Delay(half_step_delay);
 
-	htim9.Instance->ARR = pitch = Gb3;
+	htim9.Instance->ARR = pitch = Gb2;
 	htim9.Instance->CCR1 = pitch/2;
 	app_window->state = GFXWIN_WRITING;
 	gfx_fill_screen(color_yellow);
@@ -246,7 +246,7 @@ void app_loop(void)
 	while (app_window->state != GFXWIN_CLEAN)
 	HAL_Delay(half_step_delay);
 
-	htim9.Instance->ARR = pitch = Ab3;
+	htim9.Instance->ARR = pitch = Ab2;
 	htim9.Instance->CCR1 = pitch/2;
 	app_window->state = GFXWIN_WRITING;
 	gfx_fill_screen(color_magenta);
@@ -254,7 +254,7 @@ void app_loop(void)
 	while (app_window->state != GFXWIN_CLEAN)
 	HAL_Delay(half_step_delay);
 
-	htim9.Instance->ARR = pitch = A3;
+	htim9.Instance->ARR = pitch = A2;
 	htim9.Instance->CCR1 = pitch/2;
 	app_window->state = GFXWIN_WRITING;
 	gfx_fill_screen(color_black);
@@ -354,16 +354,16 @@ void app_loop(void)
 		app_window->state = GFXWIN_DIRTY;
 
 		HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
-		htim9.Instance->ARR = pitch = F2 * scale;
-		htim9.Instance->CCR1 = pitch/2;
-		HAL_Delay(step_delay);
-		htim9.Instance->ARR = pitch = C2 * scale;
+		htim9.Instance->ARR = pitch = D2 * scale;
 		htim9.Instance->CCR1 = pitch/2;
 		HAL_Delay(step_delay);
 		htim9.Instance->ARR = pitch = A1 * scale;
 		htim9.Instance->CCR1 = pitch/2;
 		HAL_Delay(step_delay);
-		htim9.Instance->ARR = pitch = F1 * scale;
+		htim9.Instance->ARR = pitch = Gb1 * scale;
+		htim9.Instance->CCR1 = pitch/2;
+		HAL_Delay(step_delay);
+		htim9.Instance->ARR = pitch = D1 * scale;
 		htim9.Instance->CCR1 = pitch/2;
 		HAL_Delay(step_delay);
 		HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_1);
@@ -424,15 +424,15 @@ void app_loop(void)
 	HAL_Delay(step_delay);
 	HAL_Delay(step_delay);
 
-	int16_t alien_x = 352;
+	int16_t alien_x = 152;
 
-	while (alien_x < 640)
+	while (alien_x < 328)
 	{
 		app_window->state = GFXWIN_WRITING;
 		gfx_fill_rect_loop(color_loop, color_loop_length, 0, 120, 320, 120);
 		gfx_draw_binary_sprite(alien_sprite, alien_x, 130, alien_color, 8);
 		app_window->state = GFXWIN_DIRTY;
-		htim9.Instance->ARR = pitch = Gb1;
+		htim9.Instance->ARR = pitch = (Gb1 * (1 + alien_x / 320));
 		htim9.Instance->CCR1 = pitch/2;
 		HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
 		HAL_Delay(half_step_delay);
@@ -442,9 +442,6 @@ void app_loop(void)
 		HAL_Delay(half_step_delay);
 	}
 
-	htim9.Instance->ARR = pitch = C2;
-	htim9.Instance->CCR1 = pitch/2;
-	HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
 	HAL_Delay(step_delay);
 	HAL_Delay(step_delay);
 	HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_1);

@@ -9,6 +9,16 @@
 
 typedef GfxWindow_t WINDOW;
 
+typedef enum EmulatorStateFlag
+{
+  EMU_FLAG_NONE         = 0b00000000,
+  EMU_FLAG_RESET        = 0b00000001,
+  EMU_FLAG_LOOP         = 0b00000010,
+  EMU_FLAG_STEP_MODE    = 0b00000100,
+  EMU_FLAG_STEP_PRESSED = 0b00001000,
+  EMU_FLAG_RENDER       = 0b00010000,
+} EmulatorStateFlag_t;
+
 typedef union ComboRegister
 {
     uint8_t bytes[2];
@@ -29,12 +39,7 @@ typedef struct Chip8Registers
 
 typedef struct EmulatorState
 {
-    // TODO: compress the separate state flags into a single state enum
-    bool should_reset;
-    bool loop;
-    bool step_mode;
-    bool step_pressed;
-
+    EmulatorStateFlag_t flags : 8;
     struct timespec start_clock;
     uint16_t emu_key_states[EMU_KEY_COUNT];
     uint16_t chip8_key_states[CHIP8_KEY_COUNT];
@@ -51,6 +56,7 @@ typedef struct EmulatorState
 typedef struct DisplayLayout
 {
     WINDOW *window_chip8;
+    WINDOW *window_emu;
     BinarySprite_t *display_chip8;
 } DisplayLayout_t;
 
