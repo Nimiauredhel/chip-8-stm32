@@ -289,5 +289,32 @@ void gfx_draw_binary_sprite(BinarySprite_t *sprite, uint16_t x_origin, uint16_t 
 	gfx_draw_binary_sprite_adhoc(sprite->height_pixels, sprite->width_bytes, sprite->pixel_mask, x_origin, y_origin, color, scale);
 }
 
+void gfx_print_string(char *string, uint16_t x_origin, uint16_t y_origin, const Color565_t color, uint8_t scale)
+{
+	uint16_t x = x_origin;
+	uint16_t y = y_origin;
+	uint16_t length = strlen(string);
+	uint16_t i = 0;
+
+	for (i = 0; i < length; i++)
+	{
+		if (x+(default_font.width_bytes*8*scale) >= GFX_SCREEN_WIDTH || string[i] == '\n')
+		{
+			y += default_font.height_pixels * scale * 1.25f;
+			x = x_origin;
+
+			if (string[i] == '\n') continue;
+		}
+
+		gfx_draw_binary_sprite_adhoc(
+		default_font.height_pixels, default_font.width_bytes,
+		&default_font.data[((uint8_t)string[i])*default_font.height_pixels*default_font.width_bytes],
+		x, y, color, scale);
+
+		x += default_font.width_bytes * 8 * scale;
+	}
+
+}
+
 void gfx_draw_rect_sprite_565(RectSprite565_t sprite, uint16_t x_origin, uint16_t y_origin);
 void gfx_draw_rect_sprite_565_scaled(RectSprite565_t sprite, uint16_t x_origin, uint16_t y_origin, float scale);

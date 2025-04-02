@@ -161,6 +161,7 @@ void gfx_fill_rect_single_color(uint16_t x_origin, uint16_t y_origin, uint16_t w
 void gfx_draw_binary_sprite(BinarySprite_t *sprite, uint16_t x_origin, uint16_t y_origin, const Color565_t color, uint8_t scale);
 void gfx_draw_binary_sprite_adhoc(uint16_t height_pixels, uint8_t width_bytes, uint8_t *pixel_mask, uint16_t x_origin, uint16_t y_origin, const Color565_t color, uint8_t scale);
 
+void gfx_print_string(char *string, uint16_t x_origin, uint16_t y_origin, const Color565_t color, uint8_t scale);
 
 void gfx_draw_rect_sprite_565(RectSprite565_t sprite, uint16_t x_origin, uint16_t y_origin);
 void gfx_draw_rect_sprite_565_scaled(RectSprite565_t sprite, uint16_t x_origin, uint16_t y_origin, float scale);

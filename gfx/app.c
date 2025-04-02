@@ -142,33 +142,49 @@ void app_loop(void)
 	htim9.Instance->ARR = pitch = A2;
 	htim9.Instance->CCR1 = pitch / 2;
 
-	while (true)
+	app_window->state = GFXWIN_WRITING;
+	gfx_fill_screen(color_black);
+	app_window->state = GFXWIN_DIRTY;
+	while (app_window->state != GFXWIN_CLEAN)
+	HAL_Delay(step_delay);
+
+	// font test!
+	app_window->state = GFXWIN_WRITING;
+
+	for (int i = 0; i < (128-32); i++)
 	{
-		app_window->state = GFXWIN_WRITING;
-		gfx_fill_screen(color_black);
-		app_window->state = GFXWIN_DIRTY;
-		while (app_window->state != GFXWIN_CLEAN)
-		HAL_Delay(step_delay);
+		int x = ((i) * 8 * 4) % 320;
+		int y = ((i) * 8 * 4) / 320;
 
-		// font test!
-		app_window->state = GFXWIN_WRITING;
-
-		for (int i = 0; i < (128-32); i++)
-		{
-			int x = ((i) * 8 * 4) % 320;
-			int y = ((i) * 8 * 4) / 320;
-
-			gfx_fill_rect_single_color(x, y*5*4, default_font.width_bytes*8*3, default_font.height_pixels*3, color_blue);
-			gfx_draw_binary_sprite_adhoc(
-			default_font.height_pixels, default_font.width_bytes,
-			&default_font.data[(i+32)*5], x, y*5*4, color_white, 3);
-		}
-		app_window->state = GFXWIN_DIRTY;
-		while (app_window->state != GFXWIN_CLEAN)
-		HAL_Delay(half_step_delay);
-
-		HAL_Delay(60000);
+		gfx_fill_rect_single_color(x, y*5*4, default_font.width_bytes*8*3, default_font.height_pixels*3, color_blue);
+		gfx_draw_binary_sprite_adhoc(
+		default_font.height_pixels, default_font.width_bytes,
+		&default_font.data[(i+32)*5], x, y*5*4, color_white, 3);
 	}
+
+	app_window->state = GFXWIN_DIRTY;
+	while (app_window->state != GFXWIN_CLEAN)
+	HAL_Delay(half_step_delay);
+
+	HAL_Delay(step_delay);
+
+	app_window->state = GFXWIN_WRITING;
+	gfx_fill_screen(color_black);
+	app_window->state = GFXWIN_DIRTY;
+	while (app_window->state != GFXWIN_CLEAN)
+	HAL_Delay(step_delay);
+
+	HAL_Delay(step_delay);
+
+	app_window->state = GFXWIN_WRITING;
+	gfx_print_string("Text test!", 0, 4, color_red, 3);
+	gfx_print_string("Medium text...", 8, 32, color_magenta, 2);
+	gfx_print_string("small text !@#$%^&*()", 16, 64, color_yellow, 1);
+	app_window->state = GFXWIN_DIRTY;
+	while (app_window->state != GFXWIN_CLEAN)
+	HAL_Delay(half_step_delay);
+
+	HAL_Delay(step_delay);
 
 	HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
 	app_window->state = GFXWIN_WRITING;
