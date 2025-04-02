@@ -8,7 +8,17 @@
 #include "gfx.h"
 #include <stdbool.h>
 
-BinarySpriteSheet_t default_font =
+// RGB565 2 byte format: [ggGbbbbB][rrrrRggg]
+const Color565_t color_black = { 0b00000000, 0b00000000 };
+const Color565_t color_white = { 0b11111111, 0b11111111 };
+const Color565_t color_red = { 0b00000000, 0b11111000 };
+const Color565_t color_green = { 0b11100000, 0b00000111 };
+const Color565_t color_blue = { 0b00011111, 0b00000000 };
+const Color565_t color_cyan = { 0b11111111, 0b00000111 };
+const Color565_t color_magenta = { 0b00011111, 0b11111000 };
+const Color565_t color_yellow = { 0b11100000, 0b11111111 };
+
+const BinarySpriteSheet_t default_font =
 {
 		.height_pixels = 5,
 		.width_bytes = 1,
@@ -16,37 +26,41 @@ BinarySpriteSheet_t default_font =
 		.data = font_8x5,
 };
 
+static bool initialized = false;
+
 /**
- * @brief Global gfx.c variable representing the current target window for gfx operations.
+ * @brief Static gfx.c variable listing currently visible windows. Used by the gfx refresh routine.
  * TODO: add support for:
- * TODO: * defining MULTIPLE active windows
  * TODO: * configurable draw order
  * TODO: * individual refresh rates
  * TODO: * handling overlaps without resorting to one big buffer,
  * TODO:   or figure out how to effectively use one big buffer
  * TODO:   but selectively push parts of it to the screen.
  */
-GfxWindow_t *selected_window = NULL;
+static GfxWindow_t *window_list = NULL;
 
-// RGB565 2 byte format: [ggGbbbbB][rrrrRggg]
-Color565_t color_black = { 0b00000000, 0b00000000 };
-Color565_t color_white = { 0b11111111, 0b11111111 };
-Color565_t color_red = { 0b00000000, 0b11111000 };
-Color565_t color_green = { 0b11100000, 0b00000111 };
-Color565_t color_blue = { 0b00011111, 0b00000000 };
-Color565_t color_cyan = { 0b11111111, 0b00000111 };
-Color565_t color_magenta = { 0b00011111, 0b11111000 };
-Color565_t color_yellow = { 0b11100000, 0b11111111 };
+/**
+ * @brief Static gfx.c variable representing currently selected window for gfx operations.
+ */
+static GfxWindow_t *selected_window = NULL;
 
 void GFX_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
-	gfx_push_to_screen(selected_window);
+	GfxWindow_t *current = window_list;
+
+	while (current != NULL)
+	{
+		gfx_push_to_screen(current);
+		current = current->next;
+	}
 }
 
 void gfx_init(uint32_t orientation)
 {
+	if (initialized) return;
 	screen_init(orientation);
 	HAL_TIM_RegisterCallback(&htim2, HAL_TIM_PERIOD_ELAPSED_CB_ID, GFX_TIM_PeriodElapsedCallback);
+	initialized = true;
 	HAL_TIM_Base_Start_IT(&htim2);
 }
 
@@ -77,6 +91,59 @@ void gfx_select_window(GfxWindow_t *window)
 	}
 
 	selected_window = window;
+}
+
+void gfx_show_window(GfxWindow_t *window)
+{
+	window->next = NULL;
+
+	if (window_list == NULL)
+	{
+		window_list = window;
+	}
+	else
+	{
+		GfxWindow_t *current = window_list;
+		while(current->next != NULL)
+			current = current->next;
+		current->next = window;
+	}
+}
+
+void gfx_hide_window(GfxWindow_t *window)
+{
+	if (window_list == NULL)
+	{
+		return;
+	}
+	else
+	{
+		GfxWindow_t *current = window_list;
+		GfxWindow_t *prev = NULL;
+
+		do
+		{
+			if (current == window)
+			{
+				// if this was the HEAD, make its NEXT the new HEAD
+				if (prev == NULL)
+				{
+					window_list = current->next;
+				}
+				// if PREV exists, make its NEXT the removed node's NEXT
+				else
+				{
+					prev->next = current->next;
+				}
+
+				current->next = NULL;
+				break;
+			}
+			prev = current;
+			current = current->next;
+		}
+		while(current->next != NULL);
+	}
 }
 
 void gfx_push_to_screen(GfxWindow_t *window)
@@ -241,7 +308,6 @@ static void gfx_draw_binary_byte(uint8_t byte, uint16_t x_origin, uint16_t y_ori
 {
     int8_t start_bit = -1;
     int8_t end_bit = -1;
-    bool bit_on = false;
 
     for (uint8_t bit = 0; bit < 8; bit++)
     {

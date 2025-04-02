@@ -72,6 +72,8 @@ typedef enum GfxWindowState
  * @brief GfxWindow_t represents a target region on the screen and an associated pixel buffer.
  * The field widths are restricted to an absurd theoretical max resolution of 4095*4095.
  * The benefits/drawbacks of this are still to be determined.
+ * Currently also holds a pointer to another GfxWindow to facilitate a linked list.
+ * TODO: Consider extracting the pointer to a separate Node struct or using array indices.
  * TODO: figure out if restricting the field widths has either beneficial or detrimental effects.
  */
 typedef struct GfxWindow
@@ -82,6 +84,8 @@ typedef struct GfxWindow
 	uint16_t width : 12;
 	uint16_t height : 12;
 	uint32_t size_bytes : 24;
+	uint32_t id;
+	struct GfxWindow *next;
 	uint8_t buffer[];
 } GfxWindow_t;
 
@@ -124,22 +128,22 @@ extern UART_HandleTypeDef huart3;
 
 extern bool gfx_dirty;
 
-extern Color565_t color_black;
-extern Color565_t color_white;
-extern Color565_t color_red;
-extern Color565_t color_green;
-extern Color565_t color_blue;
-extern Color565_t color_cyan;
-extern Color565_t color_magenta;
-extern Color565_t color_yellow;
+extern const Color565_t color_black;
+extern const Color565_t color_white;
+extern const Color565_t color_red;
+extern const Color565_t color_green;
+extern const Color565_t color_blue;
+extern const Color565_t color_cyan;
+extern const Color565_t color_magenta;
+extern const Color565_t color_yellow;
 
-extern BinarySpriteSheet_t default_font;
-
-extern GfxWindow_t *selected_window;
+extern const BinarySpriteSheet_t default_font;
 
 void gfx_init(uint32_t orientation);
 GfxWindow_t *gfx_create_window(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 void gfx_select_window(GfxWindow_t *window);
+void gfx_show_window(GfxWindow_t *window);
+void gfx_hide_window(GfxWindow_t *window);
 void gfx_push_to_screen(GfxWindow_t *window);
 
 /**

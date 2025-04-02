@@ -130,24 +130,34 @@ void app_init(void)
 
 void app_clean(void)
 {
+	while (app_window->state != GFXWIN_CLEAN)
+	HAL_Delay(step_delay);
+	app_window->state = GFXWIN_WRITING;
+	gfx_fill_screen(color_black);
+	app_window->state = GFXWIN_DIRTY;
+
 	gfx_select_window(NULL);
+	// remove window reference from the refresh list before deallocating
+	// TODO: extract window deallocation steps to function
+	gfx_hide_window(app_window);
 	free(app_window);
 }
 
 void app_loop(void)
 {
-	uint16_t pitch = A3;
+	uint16_t pitch = A1;
 
 	HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_1);
-	htim9.Instance->ARR = pitch = A2;
-	htim9.Instance->CCR1 = pitch / 2;
 
 	app_window->state = GFXWIN_WRITING;
 	gfx_fill_screen(color_black);
 	app_window->state = GFXWIN_DIRTY;
+
+	// add window to the refresh list
+	gfx_show_window(app_window);
+
 	while (app_window->state != GFXWIN_CLEAN)
 	HAL_Delay(step_delay);
-
 	// font test!
 	app_window->state = GFXWIN_WRITING;
 
@@ -187,6 +197,9 @@ void app_loop(void)
 	HAL_Delay(step_delay);
 
 	HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
+	htim9.Instance->ARR = pitch = A2;
+	htim9.Instance->CCR1 = pitch / 2;
+
 	app_window->state = GFXWIN_WRITING;
 	gfx_fill_screen(color_white);
 	app_window->state = GFXWIN_DIRTY;
@@ -335,22 +348,22 @@ void app_loop(void)
 
 	while (scale < 1.0f)
 	{
-		scale += 0.2f;
+		scale += 0.25f;
 		app_window->state = GFXWIN_WRITING;
 		gfx_fill_rect_loop(color_loop, color_loop_length, 160 - (160 * scale), 120 - (120 * scale), 320 * scale, 240 * scale);
 		app_window->state = GFXWIN_DIRTY;
 
 		HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
-		htim9.Instance->ARR = pitch = F4;
+		htim9.Instance->ARR = pitch = F2 * scale;
 		htim9.Instance->CCR1 = pitch/2;
 		HAL_Delay(step_delay);
-		htim9.Instance->ARR = pitch = C4;
+		htim9.Instance->ARR = pitch = C2 * scale;
 		htim9.Instance->CCR1 = pitch/2;
 		HAL_Delay(step_delay);
-		htim9.Instance->ARR = pitch = A3;
+		htim9.Instance->ARR = pitch = A1 * scale;
 		htim9.Instance->CCR1 = pitch/2;
 		HAL_Delay(step_delay);
-		htim9.Instance->ARR = pitch = F3;
+		htim9.Instance->ARR = pitch = F1 * scale;
 		htim9.Instance->CCR1 = pitch/2;
 		HAL_Delay(step_delay);
 		HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_1);

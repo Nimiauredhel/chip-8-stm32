@@ -25,9 +25,12 @@ void CHIP8_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 		if (instance->registers->DT > 0) instance->registers->DT--;
 		if (instance->registers->ST > 0) instance->registers->ST--;
 
+		// the GFXWIN_CLEAN check is critical to avoid ISR deadlock!
+		// TODO: use a more elegant method to avoid deadlock
 		// TODO: formalize this
 		if (/*render_queue > 15 ||*/
-			(render_queue > 0))
+			(render_queue > 0)
+			&& instance->layout.window_chip8->state == GFXWIN_CLEAN)
 		{
 			render_queue = 0;
 			render_display(instance, instance->layout.window_chip8);
@@ -208,8 +211,9 @@ bool run(Chip8_t *chip8)
         */
     }
 
-	HAL_TIM_Base_Stop_IT(&htim2);
+    instance = NULL;
 	HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_1);
+	HAL_TIM_Base_Stop_IT(&htim3);
 	deinit_display(&chip8->layout);
     HAL_Delay(25);
 
