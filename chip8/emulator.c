@@ -15,26 +15,12 @@ void CHIP8_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
 	if (instance == NULL) return;
 
+	read_input(instance->emu_state->emu_key_states, instance->emu_state->chip8_key_states);
+	emu_handle_input(instance);
 	hardware_timer_short_counter++;
 	hardware_timer_long_counter++;
 
 }
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-  if(GPIO_Pin == USER_Btn_Pin)
-  {
-	  if (instance != NULL)
-	  {
-		  instance->emu_state->flags |= EMU_FLAG_RESET;
-	  }
-  }
-  else
-  {
-      __NOP();
-  }
-}
-
 
 void emu_handle_input(Chip8_t *chip8)
 {
@@ -47,22 +33,59 @@ void emu_handle_input(Chip8_t *chip8)
         chip8->emu_state->flags |= EMU_FLAG_RESET;
 
     if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_STEP_MODE_IDX))
-        chip8->emu_state->flags ^= EMU_FLAG_STEP_MODE;
+    {
+        chip8->emu_state->flags |= EMU_FLAG_STEP_MODE;
+		chip8->emu_state->emu_key_states[EMU_KEY_STEP_MODE_IDX] = 0;
+    }
 
     if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_STEP_ONE_IDX))
+    {
         chip8->emu_state->flags |= EMU_FLAG_STEP_PRESSED;
+		chip8->emu_state->emu_key_states[EMU_KEY_STEP_ONE_IDX] = 0;
+    }
 
     if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_SPEED_UP_IDX))
     {
+		chip8->emu_state->emu_key_states[EMU_KEY_SPEED_UP_IDX] = 0;
         chip8->emu_state->speed_modifier += EMU_SPEED_INCREMENT;
         if (chip8->emu_state->speed_modifier > EMU_MAX_SPEED_MOD) chip8->emu_state->speed_modifier = EMU_MAX_SPEED_MOD;
         chip8->emu_state->ideal_step_delay_us = EMU_DEFAULT_STEP_DELAY_US / chip8->emu_state->speed_modifier;
     }
     else if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_SPEED_DOWN_IDX))
     {
+		chip8->emu_state->emu_key_states[EMU_KEY_SPEED_DOWN_IDX] = 0;
         chip8->emu_state->speed_modifier -= EMU_SPEED_INCREMENT;
         if (chip8->emu_state->speed_modifier < EMU_MIN_SPEED_MOD) chip8->emu_state->speed_modifier = EMU_MIN_SPEED_MOD;
         chip8->emu_state->ideal_step_delay_us = EMU_DEFAULT_STEP_DELAY_US / chip8->emu_state->speed_modifier;
+    }
+
+    if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_SHOW_STATE_IDX))
+    {
+		chip8->emu_state->emu_key_states[EMU_KEY_SHOW_STATE_IDX] = 0;
+    	chip8->emu_state->flags |=  EMU_FLAG_SHOW_STATE;
+    	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_REGS;
+    	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_DISASS;
+    }
+    else if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_SHOW_REGS_IDX))
+    {
+		chip8->emu_state->emu_key_states[EMU_KEY_SHOW_REGS_IDX] = 0;
+    	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_STATE;
+    	chip8->emu_state->flags |=  EMU_FLAG_SHOW_REGS;
+    	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_DISASS;
+    }
+    else if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_SHOW_DISASS_IDX))
+    {
+		chip8->emu_state->emu_key_states[EMU_KEY_SHOW_DISASS_IDX] = 0;
+    	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_STATE;
+    	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_REGS;
+    	chip8->emu_state->flags |=  EMU_FLAG_SHOW_DISASS;
+    }
+    else if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_SHOW_NONE_IDX))
+    {
+		chip8->emu_state->emu_key_states[EMU_KEY_SHOW_NONE_IDX] = 0;
+    	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_STATE;
+    	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_REGS;
+    	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_DISASS;
     }
 }
 
@@ -74,6 +97,8 @@ bool run(Chip8_t *chip8)
     chip8->emu_state->step_counter = 0;
     chip8->emu_state->runtime_seconds_counter = 0.0f;
     chip8->emu_state->cycle_seconds_counter = 0.0f;
+    explicit_bzero(chip8->emu_state->chip8_key_states, CHIP8_KEY_COUNT);
+    explicit_bzero(chip8->emu_state->emu_key_states, EMU_KEY_COUNT);
 
     init_display(&chip8->layout);
     //chip8->audio_stream = init_audio();
@@ -103,22 +128,27 @@ bool run(Chip8_t *chip8)
         //clock_gettime(CLOCK_MONOTONIC, (struct timespec *)&chip8->emu_state->start_clock);
 
         // render emulator (mostly timing) stats
-        // TODO: as noted above, make this optional
-        //render_emulator_state(chip8->emu_state, chip8->layout.window_emu);
+    	if (chip8->emu_state->flags & EMU_FLAG_SHOW_STATE)
+        render_emulator_state(chip8->emu_state, chip8->layout.window_emu);
 
         // render content of Chip-8 & extra VM registers.
-        // TODO: make this optional
-        //render_registers(chip8->registers, chip8->layout.window_registers);
-
-        read_input(chip8->emu_state->emu_key_states, chip8->emu_state->chip8_key_states);
-        //emu_handle_input(chip8);
+    	if (chip8->emu_state->flags & EMU_FLAG_SHOW_REGS)
+        render_registers(chip8->registers, chip8->layout.window_emu);
 
         if (should_terminate) break;
 
-        if ((chip8->emu_state->flags & EMU_FLAG_STEP_MODE)
-        && !check_input(chip8->emu_state->emu_key_states, EMU_KEY_STEP_ONE_IDX))
+        if (chip8->emu_state->flags & EMU_FLAG_STEP_MODE)
         {
+            HAL_Delay(500);
+
+            if(check_input(chip8->emu_state->emu_key_states, EMU_KEY_STEP_MODE_IDX))
+            {
+            	chip8->emu_state->flags &= ~EMU_FLAG_STEP_MODE;
+            }
+            else if(!(chip8->emu_state->flags & EMU_FLAG_STEP_PRESSED))
             continue;
+
+            chip8->emu_state->flags &= ~EMU_FLAG_STEP_PRESSED;
         }
 
         chip8->emu_state->step_counter++;
@@ -136,12 +166,10 @@ bool run(Chip8_t *chip8)
         decode_instruction(chip8->instruction);
 
         // rendering the disassembled instruction
-        // TODO: make this optional
-        //render_disassembly(chip8->instruction, chip8->layout.window_emu);
+    	if (chip8->emu_state->flags & EMU_FLAG_SHOW_DISASS)
+        render_disassembly(chip8->instruction, chip8->layout.window_emu);
 
         // executing the actual instruction;
-        // this also refreshes the display if necessary
-        // TODO: figure out if setting a display_dirty flag would be better
         execute_instruction(chip8, chip8->instruction, chip8->layout.window_chip8);
 
         if (!(chip8->emu_state->flags & EMU_FLAG_LOOP))

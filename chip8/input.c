@@ -17,27 +17,29 @@ void read_input(uint16_t *emu_key_states, uint16_t *chip8_key_states)
 
     uint8_t idx;
     uint16_t key_state_current = keypad_get_state();
+    bool emu_input = HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin);
 
-    for (idx = 0; idx < CHIP8_KEY_COUNT; idx++)
-    {
-    	if (key_state_current & 1 << idx)
-    	{
-    		REGISTER_CHIP8_KEY_DOWN(idx);
-    	}
-    	else if (chip8_key_states[idx] > 0)
-        chip8_key_states[idx] -= 1;
-    }
+	for (idx = 0; idx < EMU_KEY_COUNT; idx++)
+	{
+		if (emu_input && (key_state_current & 1 << idx))
+		{
+			REGISTER_EMU_KEY_DOWN(idx);
+		}
+		else if (emu_key_states[idx] > 0)
+		emu_key_states[idx] -= 1;
+	}
 
-    /*
-    for (idx = 0; idx < EMU_KEY_COUNT; idx++)
-    {
-        if (emu_key_states[idx] > 0)
-        emu_key_states[idx] -= 1;
-    }
-    */
-
+	for (idx = 0; idx < CHIP8_KEY_COUNT; idx++)
+	{
+		if (!emu_input && (key_state_current & 1 << idx))
+		{
+			REGISTER_CHIP8_KEY_DOWN(idx);
+		}
+		else if (chip8_key_states[idx] > 0)
+		chip8_key_states[idx] -= 1;
+	}
 #undef REGISTER_EMU_KEY_DOWN
-#undef REGISTER_CHIP8_KEY_DOWN
+#undef REGISTER_CHIP8_KEY_DOWREGSN
 }
 
 bool check_input(uint16_t *key_states, uint8_t key_idx)

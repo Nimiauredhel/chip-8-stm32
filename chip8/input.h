@@ -6,8 +6,8 @@
 #include "keypad.h"
 
 #define MAX_SIMULTANEOUS_KEYS 16
-#define CHIP8_INPUT_BUFFER_CYCLES (32)
-#define EMU_INPUT_BUFFER_CYCLES (1)
+#define CHIP8_INPUT_BUFFER_CYCLES (128)
+#define EMU_INPUT_BUFFER_CYCLES (2)
 
 typedef enum Chip8KeyIndex
 {
@@ -32,43 +32,18 @@ typedef enum Chip8KeyIndex
 
 typedef enum EmuKeyIndex
 {
-    EMU_KEY_QUIT_IDX = 0,
-    EMU_KEY_RESET_IDX = 1,
-    EMU_KEY_SPEED_UP_IDX = 2,
-    EMU_KEY_SPEED_DOWN_IDX = 3,
-    EMU_KEY_STEP_MODE_IDX = 4,
-    EMU_KEY_STEP_ONE_IDX = 5,
-    EMU_KEY_ANY_IDX = 6,
+    EMU_KEY_QUIT_IDX = 0xC,
+    EMU_KEY_RESET_IDX = 0xD,
+    EMU_KEY_SPEED_UP_IDX = 0xB,
+    EMU_KEY_SPEED_DOWN_IDX = 0xA,
+    EMU_KEY_STEP_MODE_IDX = 0xE,
+    EMU_KEY_STEP_ONE_IDX = 0xF,
+    EMU_KEY_SHOW_STATE_IDX = 0x7,
+    EMU_KEY_SHOW_REGS_IDX = 0x8,
+    EMU_KEY_SHOW_DISASS_IDX = 0x9,
+    EMU_KEY_SHOW_NONE_IDX = 0x0,
+    EMU_KEY_ANY_IDX = 16,
 } EmuKeyIndex_t;
-
-typedef enum KeyBind
-{
-    KEY_NONE = -1,
-
-    EMU_KEY_QUIT_BIND = '~',       // ~ aka Shift-` 
-    EMU_KEY_RESET_BIND = '|',      // Shift-\ -terminate the current instance and immediately launch another
-    EMU_KEY_SPEED_UP_BIND = '+',   // Shift-Plus
-    EMU_KEY_SPEED_DOWN_BIND = '_', // Shift-Minus 
-    EMU_KEY_STEP_MODE_BIND = 'P',  // Shift-P - enter/exit step mode
-    EMU_KEY_STEP_ONE_BIND = 'p',   // P - execute a single step in step mode
-
-    CHIP8_KEY_1_BIND = '1',
-    CHIP8_KEY_2_BIND = '2',
-    CHIP8_KEY_3_BIND = '3',
-    CHIP8_KEY_C_BIND = '4',
-    CHIP8_KEY_4_BIND = 'q',
-    CHIP8_KEY_5_BIND = 'w',
-    CHIP8_KEY_6_BIND = 'e',
-    CHIP8_KEY_D_BIND = 'r',
-    CHIP8_KEY_7_BIND = 'a',
-    CHIP8_KEY_8_BIND = 's',
-    CHIP8_KEY_9_BIND = 'd',
-    CHIP8_KEY_E_BIND = 'f',
-    CHIP8_KEY_A_BIND = 'z',
-    CHIP8_KEY_0_BIND = 'x',
-    CHIP8_KEY_B_BIND = 'c',
-    CHIP8_KEY_F_BIND = 'v',
-} KeyBind_t;
 
 void read_input(uint16_t *emu_key_states, uint16_t *chip8_key_states);
 uint16_t check_input_buffer(uint16_t *key_states, uint8_t key_idx);

@@ -17,6 +17,9 @@ typedef enum EmulatorStateFlag
   EMU_FLAG_STEP_MODE    = 0b00000100,
   EMU_FLAG_STEP_PRESSED = 0b00001000,
   EMU_FLAG_RENDER       = 0b00010000,
+  EMU_FLAG_SHOW_STATE   = 0b00100000,
+  EMU_FLAG_SHOW_REGS    = 0b01000000,
+  EMU_FLAG_SHOW_DISASS  = 0b10000000,
 } EmulatorStateFlag_t;
 
 typedef union ComboRegister

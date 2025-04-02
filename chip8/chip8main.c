@@ -2,18 +2,23 @@
 
 int chip8start(void)
 {
-	int16_t rom_index = -1;
+	int16_t rom_index = 0;
 
-    bool should_run = true;
+    bool reset = false;
 
-    while (should_run)
+    for(;;)
     {
-    	rom_index++;
-    	if (rom_index > CHIP_8_PROGRAM_COUNT) rom_index = 0;
-
 		Chip8_t *chip8 = create_instance(chip8_programs[rom_index]);
-		bool should_run = run(chip8);
+		bool reset = run(chip8);
 		free(chip8);
+
+		should_terminate = false;
+
+    	if (!reset)
+    	{
+			rom_index++;
+			if (rom_index > CHIP_8_PROGRAM_COUNT) rom_index = 0;
+    	}
     }
 
     return EXIT_SUCCESS;
