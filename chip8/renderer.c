@@ -11,7 +11,7 @@
 #define KEY_CONDITIONAL_COLOR_ON(key) \
 	(memcpy(text_color, emu_state->chip8_key_states[key] > 0 ? color_yellow : color_white, 2))
 
-#define COLOR_OFF (text_color = color_white)
+#define COLOR_OFF (memcpy(text_color, color_white, 2))
 
 void init_display(DisplayLayout_t *layout)
 {
@@ -161,24 +161,35 @@ void render_registers(Chip8Registers_t *registers, WINDOW *window_registers)
 
 void render_emulator_state(EmulatorState_t *emu_state, WINDOW *window_emu)
 {
-	/*
-    int8_t color_pair_idx = 0;
+	const uint8_t line_length_px = 56;
+	const uint8_t line_height_px = 10;
+    Color565_t text_color;
+    char text_buffer[32];
 
-    werase(window_emu);
-    box(window_emu, 0, 0);
-    mvwprintw(window_emu, 1, 1, "Speed[%.2f]", emu_state->speed_modifier);
-    mvwprintw(window_emu, 2, 1, "Step Counter[%u]", emu_state->step_counter);
-    mvwprintw(window_emu, 3, 1, "Runtime[%.2fs]", emu_state->runtime_seconds_counter);
-    mvwprintw(window_emu, 4, 1, "Avg. FPS[%.2f]", emu_state->avg_cps);
+    COLOR_OFF;
+
+	gfx_select_window(window_emu);
+	window_emu->state = GFXWIN_WRITING;
+	gfx_fill_screen(color_black);
+
+    snprintf(text_buffer, 32, "Speed[%.2f]", emu_state->speed_modifier);
+    gfx_print_string(text_buffer, 0, 0, text_color, 1);
+
+    snprintf(text_buffer, 32, "Step Counter[%u]", emu_state->step_counter);
+    gfx_print_string(text_buffer, 0, line_height_px, text_color, 1);
+
+    snprintf(text_buffer, 32, "Runtime[%.2fs]", emu_state->runtime_seconds_counter);
+    gfx_print_string(text_buffer, 0, line_height_px*2, text_color, 1);
+
+    snprintf(text_buffer, 32, "Avg. FPS[%.2f]", emu_state->avg_cps);
+    gfx_print_string(text_buffer, 0, line_height_px*3, text_color, 1);
 
     for (int i = 0; i < CHIP8_KEY_COUNT; i++)
     {
-        KEY_CONDITIONAL_COLOR_ON(window_emu, i);
-        mvwprintw(window_emu, (i/4)+1, (8*(i%4))+24, "%s[%u] ", chip8_key_names[i], emu_state->chip8_key_states[i]);
-        COLOR_OFF(window_emu);
+        KEY_CONDITIONAL_COLOR_ON(i);
+        snprintf(text_buffer, 32, "%s[%u] ", chip8_key_names[i], emu_state->chip8_key_states[i]);
+        gfx_print_string(text_buffer, (i/4) * (line_length_px), (line_height_px*(i%4))+(line_height_px*4), text_color, 1);
     }
 
-    //mvwprintw(window_emu, 5, 1, "Tick Counter[%u/%u]", tick_counter, tick_threshold);
-    wrefresh(window_emu);
-    */
+	window_emu->state = GFXWIN_DIRTY;
 }
