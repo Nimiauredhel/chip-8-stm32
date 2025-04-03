@@ -80,12 +80,10 @@ void emu_handle_input(Chip8_t *chip8)
     	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_REGS;
     	chip8->emu_state->flags |=  EMU_FLAG_SHOW_DISASS;
     }
-    else if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_SHOW_NONE_IDX))
+    else if (check_input(chip8->emu_state->emu_key_states, EMU_KEY_SHOW_SUMMARY_IDX))
     {
-		chip8->emu_state->emu_key_states[EMU_KEY_SHOW_NONE_IDX] = 0;
-    	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_STATE;
-    	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_REGS;
-    	chip8->emu_state->flags &=  ~EMU_FLAG_SHOW_DISASS;
+		chip8->emu_state->emu_key_states[EMU_KEY_SHOW_SUMMARY_IDX] = 0;
+    	chip8->emu_state->flags |=  EMU_FLAG_SHOW_SUMMARY;
     }
 }
 
@@ -103,12 +101,11 @@ bool run(Chip8_t *chip8)
     init_display(&chip8->layout);
     //chip8->audio_stream = init_audio();
     render_display(chip8, chip8->layout.window_chip8);
-    //render_registers(chip8->registers, chip8->layout.window_registers);
-    //render_emulator_state(chip8->emu_state, chip8->layout.window_emu);
 
     //usleep(chip8->emu_state->ideal_step_delay_us);
     instance = chip8;
     HAL_Delay(1);
+
     // start TIMER 3 whose callback is set to decrement our counters
 	HAL_TIM_RegisterCallback(&htim3, HAL_TIM_PERIOD_ELAPSED_CB_ID, CHIP8_TIM_PeriodElapsedCallback);
 	HAL_TIM_Base_Start_IT(&htim3);
@@ -127,12 +124,16 @@ bool run(Chip8_t *chip8)
         // getting the start clock of the cycle to approximate our ideal frequency
         //clock_gettime(CLOCK_MONOTONIC, (struct timespec *)&chip8->emu_state->start_clock);
 
+    	if (chip8->emu_state->flags >> 5 == EMU_FLAG_SHOW_SUMMARY >> 5)
+    	{
+    		render_summary(chip8->layout.window_emu);
+    		chip8->emu_state->flags ^= EMU_FLAG_SHOW_SUMMARY;
+    	}
         // render emulator (mostly timing) stats
-    	if (chip8->emu_state->flags & EMU_FLAG_SHOW_STATE)
+    	else if (chip8->emu_state->flags & EMU_FLAG_SHOW_STATE)
         render_emulator_state(chip8->emu_state, chip8->layout.window_emu);
-
         // render content of Chip-8 & extra VM registers.
-    	if (chip8->emu_state->flags & EMU_FLAG_SHOW_REGS)
+    	else if (chip8->emu_state->flags & EMU_FLAG_SHOW_REGS)
         render_registers(chip8->registers, chip8->layout.window_emu);
 
         if (should_terminate) break;

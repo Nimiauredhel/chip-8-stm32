@@ -41,7 +41,7 @@ typedef enum EmuKeyIndex
     EMU_KEY_SHOW_STATE_IDX = 0x7,
     EMU_KEY_SHOW_REGS_IDX = 0x8,
     EMU_KEY_SHOW_DISASS_IDX = 0x9,
-    EMU_KEY_SHOW_NONE_IDX = 0x0,
+    EMU_KEY_SHOW_SUMMARY_IDX = 0x0,
     EMU_KEY_ANY_IDX = 16,
 } EmuKeyIndex_t;
 

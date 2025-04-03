@@ -371,12 +371,13 @@ void gfx_print_string(char *string, uint16_t x_origin, uint16_t y_origin, const 
 
 		}
 
-		if (string[i] == '\n' || string[i] == ' ') continue;
-
-		gfx_draw_binary_sprite_adhoc(
-		default_font.height_pixels, default_font.width_bytes,
-		&default_font.data[((uint8_t)string[i])*default_font.height_pixels*default_font.width_bytes],
-		x, y, color, scale);
+		if (string[i] != ' ')
+		{
+			gfx_draw_binary_sprite_adhoc(
+			default_font.height_pixels, default_font.width_bytes,
+			&default_font.data[((uint8_t)string[i])*default_font.height_pixels*default_font.width_bytes],
+			x, y, color, scale);
+		}
 
 		x += default_font.width_bytes * 8 * scale;
 	}
